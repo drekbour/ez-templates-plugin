@@ -1,12 +1,11 @@
 package com.joelj.jenkins.eztemplates;
 
-import java.io.IOException;
-
 import com.joelj.jenkins.eztemplates.utils.PropertyListener;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
-
 import hudson.Extension;
 import hudson.model.Job;
+
+import java.io.IOException;
 
 
 /**
@@ -14,6 +13,10 @@ import hudson.model.Job;
  */
 @Extension
 public class TemplateProjectListener extends PropertyListener<TemplateProperty> {
+
+    public TemplateProjectListener() {
+        super(TemplateProperty.class);
+    }
 
     @Override
     public void onUpdatedProperty(Job item, TemplateProperty property) throws IOException {

@@ -1,31 +1,23 @@
 package com.joelj.jenkins.eztemplates;
 
-import static com.joelj.jenkins.eztemplates.EzMatchers.hasImplementations;
-import static com.joelj.jenkins.eztemplates.EzMatchers.hasNoImplementations;
-import static com.joelj.jenkins.eztemplates.EzMatchers.hasNoTemplate;
-import static com.joelj.jenkins.eztemplates.EzMatchers.hasTemplate;
-import static com.joelj.jenkins.eztemplates.FieldMatcher.hasField;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.both;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
-
-import java.util.List;
-
-import org.apache.commons.lang3.text.WordUtils;
-import org.junit.Rule;
-import org.junit.Test;
-import org.jvnet.hudson.test.JenkinsRule;
-
-import com.joelj.jenkins.eztemplates.TemplateImplementationProperty.DescriptorImpl;
-import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
-
+import com.joelj.jenkins.eztemplates.TemplateImplementationProperty.TemplateImplementationPropertyDescriptor;
+import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
 import hudson.model.FreeStyleProject;
 import hudson.model.TopLevelItem;
 import hudson.model.listeners.ItemListener;
 import hudson.triggers.TimerTrigger;
 import hudson.util.ListBoxModel;
+import org.apache.commons.lang3.text.WordUtils;
+import org.junit.Rule;
+import org.junit.Test;
+import org.jvnet.hudson.test.JenkinsRule;
+
+import java.util.List;
+
+import static com.joelj.jenkins.eztemplates.EzMatchers.*;
+import static com.joelj.jenkins.eztemplates.FieldMatcher.hasField;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
 
 /**
@@ -59,7 +51,7 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject template2 = template("beta-template");
-        DescriptorImpl implDescriptor = new TemplateImplementationProperty.DescriptorImpl();
+        TemplateImplementationPropertyDescriptor implDescriptor = new TemplateImplementationPropertyDescriptor();
         implDescriptor.isApplicable(FreeStyleProject.class); // so doFillTemplateJobNameItems knows which types of jobs to look for
 
         // When:
@@ -79,7 +71,7 @@ public class BehaviourTest {
         // When:
         List<String> exclusions = impl.getProperty(TemplateImplementationProperty.class).getExclusions();
         // Then:
-        assertThat(exclusions, is(equalTo(Exclusions.DEFAULT)));
+        assertThat(exclusions, is(equalTo(new ProjectExclusions().getDefaults())));
     }
 
     @Test

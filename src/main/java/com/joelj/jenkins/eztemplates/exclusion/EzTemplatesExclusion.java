@@ -1,17 +1,16 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import java.io.IOException;
-
 import com.google.common.base.Throwables;
 import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
 import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
-
 import hudson.model.AbstractItem;
 import hudson.model.Job;
 import hudson.model.JobProperty;
 
-public class EzTemplatesExclusion extends HardCodedExclusion {
+import java.io.IOException;
+
+public class EzTemplatesExclusion extends HardCodedExclusion<Job> {
 
     public static final String ID = "ez-templates";
     private String displayName;

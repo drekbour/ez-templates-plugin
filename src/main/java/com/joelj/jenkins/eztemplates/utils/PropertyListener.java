@@ -1,7 +1,6 @@
 package com.joelj.jenkins.eztemplates.utils;
 
 import com.google.common.base.Throwables;
-import com.google.inject.TypeLiteral;
 import hudson.model.Item;
 import hudson.model.Job;
 import hudson.model.JobProperty;
@@ -11,14 +10,13 @@ import hudson.model.listeners.ItemListener;
 /**
  * Listens to changes only on {@link Job}s with a given {@link hudson.model.JobProperty}.
  */
-public abstract class PropertyListener<J extends JobProperty<?>> extends ItemListener {
+public abstract class PropertyListener<J extends JobProperty> extends ItemListener {
 
     private final Class<J> propertyType;
 
     @SuppressWarnings("unchecked")
-    public PropertyListener() {
-        propertyType = (Class<J>) new TypeLiteral<J>() {
-        }.getRawType(); // TODO Prefer TypeToken not available in guava-11
+    public PropertyListener(Class<J> propertyType) {
+        this.propertyType = propertyType;        // TODO Prefer TypeToken not available in guava-11
     }
 
     @Override

@@ -1,5 +1,19 @@
 package com.joelj.jenkins.eztemplates.utils;
 
+import com.joelj.jenkins.eztemplates.AbstractTemplateImplementationProperty;
+import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
+import com.joelj.jenkins.eztemplates.TemplateProperty;
+import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
+import com.joelj.jenkins.eztemplates.exclusion.ExclusionUtil;
+import com.joelj.jenkins.eztemplates.exclusion.HardCodedExclusion;
+import com.joelj.jenkins.eztemplates.promotedbuilds.PromotedBuildsTemplateUtils;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.Item;
+import hudson.model.Job;
+import jenkins.model.Jenkins;
+
+import javax.xml.transform.Source;
+import javax.xml.transform.stream.StreamSource;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -7,21 +21,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-
-import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
-import com.joelj.jenkins.eztemplates.TemplateProperty;
-import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
-import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
-import com.joelj.jenkins.eztemplates.exclusion.HardCodedExclusion;
-import com.joelj.jenkins.eztemplates.promotedbuilds.PromotedBuildsTemplateUtils;
-
-import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.model.Item;
-import hudson.model.Job;
-import jenkins.model.Jenkins;
 
 public class TemplateUtils {
     private static final Logger LOG = Logger.getLogger("ez-templates");
@@ -38,7 +37,7 @@ public class TemplateUtils {
         for (Job impl : property.getImplementations()) {
             LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
             impl.removeProperty(TemplateImplementationProperty.class);
-            ProjectUtils.silentSave(impl);
+            JobUtils.silentSave(impl);
         }
     }
 
@@ -49,7 +48,7 @@ public class TemplateUtils {
             TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
             if (oldFullName.equals(implProperty.getTemplateJobName())) {
                 implProperty.setTemplateJobName(newFullName);
-                ProjectUtils.silentSave(impl);
+                JobUtils.silentSave(impl);
             }
         }
     }
@@ -62,7 +61,7 @@ public class TemplateUtils {
         copy.addProperty(implProperty);
     }
 
-    public static void handleTemplateImplementationSaved(Job implementationProject, TemplateImplementationProperty property) throws IOException {
+    public static void handleTemplateImplementationSaved(Job implementationProject, AbstractTemplateImplementationProperty<?> property) throws IOException {
         if (property.getTemplateJobName().equals("null")) {
             LOG.warning(String.format("Implementation [%s] but has no template selected.", implementationProject.getFullDisplayName()));
             return;
@@ -76,7 +75,8 @@ public class TemplateUtils {
             throw new IllegalStateException(String.format("Cannot find template [%s] used by implementation [%s]", property.getTemplateJobName(), implementationProject.getFullDisplayName()));
         }
 
-        applyTemplate(implementationProject, templateProject, Exclusions.configuredExclusions(property));
+        Collection<Exclusion> configuredExclusions = ExclusionUtil.configuredExclusions(property.exclusionDefinitions().getAll(), property.getExclusions());
+        applyTemplate(implementationProject, templateProject, configuredExclusions);
     }
 
     private static void applyTemplate(Job implementationProject, Job templateProject, Collection<Exclusion> exclusions) throws IOException {
@@ -107,7 +107,7 @@ public class TemplateUtils {
             throw new RuntimeException("Templating failed, see logs");
         }
 
-        ProjectUtils.silentSave(implementationProject);
+        JobUtils.silentSave(implementationProject);
     }
 
     @SuppressFBWarnings
@@ -125,7 +125,7 @@ public class TemplateUtils {
         BufferedReader reader = new BufferedReader(new FileReader(templateConfigFile));
         try {
             Source source = new StreamSource(reader);
-            implementationProject = ProjectUtils.updateProjectWithXmlSource(implementationProject, source);
+            implementationProject = JobUtils.updateProjectWithXmlSource(implementationProject, source);
         } finally {
             reader.close();
         }

@@ -1,16 +1,14 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import java.util.List;
-import java.util.Map;
-
-import com.joelj.jenkins.eztemplates.jobtypes.JobsFacade;
-import com.joelj.jenkins.eztemplates.utils.ProjectUtils;
-
-import hudson.model.Job;
+import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
+import hudson.model.AbstractProject;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 
-public class TriggersExclusion extends HardCodedExclusion {
+import java.util.List;
+import java.util.Map;
+
+public class TriggersExclusion extends HardCodedExclusion<AbstractProject> {
 
     public static final String ID = "build-triggers";
     private Map<TriggerDescriptor, Trigger> oldTriggers;
@@ -31,17 +29,17 @@ public class TriggersExclusion extends HardCodedExclusion {
     }
 
     @Override
-    public void preClone(Job implementationProject) {
-        oldTriggers = JobsFacade.getTriggers( implementationProject );
+    public void preClone(AbstractProject implementationProject) {
+        oldTriggers = implementationProject.getTriggers();
     }
 
     @Override
-    public void postClone(Job implementationProject) {
+    public void postClone(AbstractProject implementationProject) {
         fixBuildTriggers(implementationProject, oldTriggers);
     }
 
-    private static void fixBuildTriggers(Job implementationProject, Map<TriggerDescriptor, Trigger> oldTriggers) {
-        List<Trigger<?>> triggersToReplace = ProjectUtils.getTriggers(implementationProject);
+    private static void fixBuildTriggers(AbstractProject implementationProject, Map<TriggerDescriptor, Trigger> oldTriggers) {
+        List<Trigger<?>> triggersToReplace = EzReflectionUtils.getFieldValue(AbstractProject.class, implementationProject, "triggers");
         if (triggersToReplace == null) {
             throw new NullPointerException("triggersToReplace");
         }

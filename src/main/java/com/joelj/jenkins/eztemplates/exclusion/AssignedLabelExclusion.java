@@ -1,11 +1,12 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import com.joelj.jenkins.eztemplates.jobtypes.JobsFacade;
-
-import hudson.model.Job;
+import com.google.common.base.Throwables;
+import hudson.model.AbstractProject;
 import hudson.model.Label;
 
-public class AssignedLabelExclusion extends HardCodedExclusion {
+import java.io.IOException;
+
+public class AssignedLabelExclusion extends HardCodedExclusion<AbstractProject> {
 
     public static final String ID = "assigned-label";
     private Label label;
@@ -26,13 +27,17 @@ public class AssignedLabelExclusion extends HardCodedExclusion {
     }
 
     @Override
-    public void preClone(Job implementationProject) {
-        label = JobsFacade.getAssignedLabel( implementationProject );
+    public void preClone(AbstractProject implementationProject) {
+        label = implementationProject.getAssignedLabel();
     }
 
     @Override
-    public void postClone(Job implementationProject) {
-        JobsFacade.setAssignedLabel( implementationProject, label );
+    public void postClone(AbstractProject implementationProject) {
+        try {
+            implementationProject.setAssignedLabel(label);
+        } catch (IOException e) {
+            Throwables.propagate(e);
+        }
     }
 
 }

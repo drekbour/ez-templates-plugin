@@ -1,20 +1,19 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import java.io.IOException;
-
 import com.google.common.base.Throwables;
-
 import hudson.model.Job;
 import hudson.model.JobProperty;
+
+import java.io.IOException;
 
 /**
  * Generic {@link Exclusion} which retains a given {@link JobProperty} through cloning
  */
-public class JobPropertyExclusion extends HardCodedExclusion {
+public class JobPropertyExclusion<J extends Job> extends HardCodedExclusion<J> {
     private final String id;
     private final String description;
     private final String className;
-    protected JobProperty cached;
+    protected JobProperty cached; // Should be JobProperty<J>
 
     public JobPropertyExclusion(String id, String description, String className) {
         this.id = id;
@@ -23,13 +22,13 @@ public class JobPropertyExclusion extends HardCodedExclusion {
     }
 
     @Override
-    public void preClone(Job implementationProject) {
+    public void preClone(J implementationProject) {
         cached = implementationProject.getProperty(className);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void postClone(Job implementationProject) {
+    public void postClone(J implementationProject) {
         try {
             if (cached != null) {
                 // Removed from template = removed from all impls
@@ -55,6 +54,6 @@ public class JobPropertyExclusion extends HardCodedExclusion {
     @Override
     public String getDisabledText() {
         // Assumes id is _also_ the plugin
-        return Exclusions.checkPlugin(id);
+        return ExclusionUtil.checkPlugin(id);
     }
 }

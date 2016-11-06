@@ -1,21 +1,16 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.logging.Logger;
-
 import com.google.common.collect.Lists;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
-
 import hudson.model.ChoiceParameterDefinition;
 import hudson.model.Job;
 import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
 
-public class JobParametersExclusion extends JobPropertyExclusion {
+import java.util.*;
+import java.util.logging.Logger;
+
+public class JobParametersExclusion extends JobPropertyExclusion<Job> {
 
     private static final Logger LOG = Logger.getLogger("ez-templates");
     public static final String ID = "job-params";

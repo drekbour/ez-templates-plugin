@@ -1,13 +1,12 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import java.lang.reflect.Method;
-
 import com.google.common.base.Throwables;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
-
 import hudson.model.Job;
 
-public class MatrixAxisExclusion extends HardCodedExclusion {
+import java.lang.reflect.Method;
+
+public class MatrixAxisExclusion extends HardCodedExclusion<Job> {
 
     public static final String ID = "matrix-axis";
     private static final String MATRIX_PROJECT = "hudson.matrix.MatrixProject";
@@ -25,7 +24,7 @@ public class MatrixAxisExclusion extends HardCodedExclusion {
 
     @Override
     public String getDisabledText() {
-        return Exclusions.checkPlugin("matrix-project");
+        return ExclusionUtil.checkPlugin("matrix-project");
     }
 
     @Override
@@ -54,13 +53,13 @@ public class MatrixAxisExclusion extends HardCodedExclusion {
         }
         EzReflectionUtils.setFieldValue(matrixProject.getClass(), matrixProject, "axes", axisList);
 
-        Class<?> clazz=null;
+        Class<?> clazz = null;
         try {
-            clazz = Class.forName(MATRIX_PROJECT);
+            clazz = Class.forName(MATRIX_PROJECT); // TODO add EzReflectionUtils.invoke ?
             for (Method m : clazz.getDeclaredMethods()) {
                 if (m.getName().equals("rebuildConfigurations")) {
                     hudson.util.ReflectionUtils.makeAccessible(m);
-                    hudson.util.ReflectionUtils.invokeMethod(m, matrixProject, new Object[] {null});
+                    hudson.util.ReflectionUtils.invokeMethod(m, matrixProject, new Object[]{null});
                 }
             }
         } catch (ClassNotFoundException e) {
