@@ -2,6 +2,7 @@ package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.google.common.base.Joiner;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Chars;
 import com.joelj.jenkins.eztemplates.Equaliser;
 import hudson.model.ChoiceParameterDefinition;
 import hudson.model.ParameterDefinition;
@@ -29,7 +30,7 @@ public class JobParametersExclusionTest {
     }
 
     private static ChoiceParameterDefinition choice(String name, String choices, String desc) {
-        return Equaliser.proxy(ChoiceParameterDefinition.class, name, Joiner.on(",").join(choices.split("(,|)")), desc);
+        return Equaliser.proxy(ChoiceParameterDefinition.class, name, Joiner.on("\n").join(Chars.asList(choices.toCharArray())), desc);
     }
 
     private static List<ParameterDefinition> params(ParameterDefinition... defs) {
@@ -96,10 +97,17 @@ public class JobParametersExclusionTest {
 
     @Test
     @TestCaseName("[{index}] {method}_{3}: ({0},{1}) -> {2}")
+    // JENKINS-38755
     @Parameters({
             "ABC, ABC, ABC, no_change",
+            "ABC, CAB, CAB, reordering_is_retained",
             "ABCD, ABC, ABCD, template_additions_are_added",
-            "AB, ABC, AB, template_removals_are_ignored"
+            "ABCDE, BCE, ABCDE, template_additions_are_added_with_order_if_child_matches",
+            "ABCDE, DBC, ADBCE, template_additions_are_added_without_order_if_child_reordered",
+            "ABC, ABCD, ABCD, child_additions_are_retained",
+            "ABC, DABC, DABC, child_additions_are_retained_with_order",
+            "ABC, AB, ABC, child_removals_are_ignored_WRONGLY",
+            "AB, ABC, ABC, template_removals_are_ignored_WRONGLY"
     })
     public void choice_param(String templateC, String childC, String resultC, String comment) {
         // Given:

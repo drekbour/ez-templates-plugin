@@ -50,7 +50,8 @@ One of those is the [Parameters][1] section.
 * Old parameters not in the template are removed from the implementation
     * :exclamation: Renaming a template parameter counts as a removal and addition - it is not synched as a "rename" and you will lose any customisation.
 * Existing parameters are synchronised
-    * The parameters' Default Values are retained by the implmentation.
+    * The parameters' Default Values are retained by the implementation.
+    * :exclamation: You cannot delete choices from a choice parameter, this would require a full remove/add of the property to reset the implementations.
 
 Usecases
 ========
