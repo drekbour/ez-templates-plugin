@@ -122,6 +122,19 @@ public class BehaviourTest {
     }
 
     @Test
+    public void saving_something_else_works() throws Exception {
+        // Given:
+        FreeStyleProject template = template("alpha-template");
+        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject other = project("beta");
+        impl.addTrigger(new TimerTrigger("* H * * *"));
+        // When:
+        ItemListener.fireOnUpdated(other);
+        // Then:
+        assertThat(impl.getTriggers().isEmpty(), is(false));
+    }
+
+    @Test
     public void saving_impl_with_no_template_works() throws Exception {
         // Given:
         FreeStyleProject impl = impl("alpha-1", "null"); // FIXME this really should be tested via web submission
