@@ -4,14 +4,13 @@ import com.joelj.jenkins.eztemplates.AbstractTemplateImplementationProperty;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
 import hudson.Extension;
-import hudson.model.Job;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
 import java.util.List;
 
-public class PipelineTemplateImplementationProperty<J extends Job<?, ?>> extends AbstractTemplateImplementationProperty<J> {
+public class PipelineTemplateImplementationProperty extends AbstractTemplateImplementationProperty<WorkflowJob> {
 
     private static final Exclusions EXCLUSION_DEFINITIONS = new PipelineExclusions();
 
@@ -33,7 +32,7 @@ public class PipelineTemplateImplementationProperty<J extends Job<?, ?>> extends
 
     @SuppressWarnings("UnusedDeclaration")
     @Extension
-    public static class PipelineTemplateImplementationPropertyDescriptor extends AbstractTemplateImplmentationPropertyDescriptor {
+    public static class PipelineTemplateImplementationPropertyDescriptor extends AbstractTemplateImplementationPropertyDescriptor {
         public PipelineTemplateImplementationPropertyDescriptor() {
             super(WorkflowJob.class);
         }

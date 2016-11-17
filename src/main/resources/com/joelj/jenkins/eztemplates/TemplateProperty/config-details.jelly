@@ -6,7 +6,7 @@
 		<b>${%All other fields will be overwritten with the template's configuration.}</b>
 	</div>
 	<link rel="stylesheet" type="text/css" href="${rootURL}/plugin/ez-templates/implementationPage.css"/>
-	<f:optionalBlock name="beTemplate" field="beTemplate" title="${%Allow this job to be used as a template}" checked="${instance != null}">
+
 		<f:entry>
 			<h3>${%Jobs implementing this template}</h3>
 			<j:choose>
@@ -20,8 +20,7 @@
 					</ul>				   
 			   </j:when>
 			   <j:otherwise>(${%None yet}...)</j:otherwise>
-			</j:choose>								
-		</f:entry>		
-	</f:optionalBlock>
+			</j:choose>
+		</f:entry>
 	<script src="${rootURL}/plugin/ez-templates/implementationPage.js"><!--empty--></script>
 </j:jelly>

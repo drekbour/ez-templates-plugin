@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.joelj.jenkins.eztemplates.exclusion.*;
+import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
 
 import java.util.Arrays;
 import java.util.List;
@@ -21,7 +22,7 @@ public class PipelineExclusions implements Exclusions {
         // Construct as delta from (default) ProjectExclusions
         ImmutableMap.Builder<String, Exclusion> builder = ImmutableMap.builder();
         builder.putAll(
-                Maps.filterKeys(PipelineExclusions.ALL, not(in(Arrays.asList(
+                Maps.filterKeys(ProjectExclusions.ALL, not(in(Arrays.asList(
                         // the label where the job is going to be run on is defined on the pipeline itself, we do nothing.
                         AssignedLabelExclusion.ID,
                         // SCM to poll is defined on the pipeline itself (in fact, you can have several SCMs to poll), so we do nothing.
@@ -33,7 +34,7 @@ public class PipelineExclusions implements Exclusions {
                         TriggersExclusion.ID
                 )))));
         // Add pipeline-specific triggers exclusion using same name and description - this is an ugly line of code but is done once ever.
-        builder.put(TriggersExclusion.ID, new JobPropertyExclusion(TriggersExclusion.ID, PipelineExclusions.ALL.get(TriggersExclusion.ID).getDescription(), "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty"));
+        builder.put(TriggersExclusion.ID, new JobPropertyExclusion(TriggersExclusion.ID, ProjectExclusions.ALL.get(TriggersExclusion.ID).getDescription(), "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty"));
         ALL = builder.build();
     }
 

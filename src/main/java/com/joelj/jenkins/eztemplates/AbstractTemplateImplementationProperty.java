@@ -42,17 +42,17 @@ public abstract class AbstractTemplateImplementationProperty<J extends Job<?, ?>
     }
 
     public Job findTemplate() {
-        return JobUtils.findProject(getTemplateJobName());
+        return JobUtils.findJob(getTemplateJobName());
     }
 
     public abstract Exclusions exclusionDefinitions();
 
     @SuppressWarnings("UnusedDeclaration")
-    public abstract static class AbstractTemplateImplmentationPropertyDescriptor extends OptionalJobPropertyDescriptor {
+    public abstract static class AbstractTemplateImplementationPropertyDescriptor extends OptionalJobPropertyDescriptor {
 
         protected final Class<? extends Job> jobType;
 
-        protected AbstractTemplateImplmentationPropertyDescriptor(Class<? extends Job> jobType) {
+        protected AbstractTemplateImplementationPropertyDescriptor(Class<? extends Job> jobType) {
             this.jobType = jobType;
         }
 
@@ -69,10 +69,11 @@ public abstract class AbstractTemplateImplementationProperty<J extends Job<?, ?>
             items.add(Messages.TemplateImplementationProperty_noTemplateSelected(), null);
             // Add all discovered templates
 
-            for (Job project : JobUtils.findProjectsWithProperty(TemplateProperty.class)) {
-                // FIXME filter by correct type
-                // fullName includes any folder structure
-                items.add(project.getFullDisplayName(), project.getFullName());
+            for (Job job : JobUtils.findJobsWithProperty(TemplateProperty.class)) {
+                if (isApplicable(job.getClass())) {
+                    // fullName includes any folder structure
+                    items.add(job.getFullDisplayName(), job.getFullName());
+                }
             }
             return items;
         }

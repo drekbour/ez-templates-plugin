@@ -25,7 +25,7 @@ import java.util.List;
 public class JobUtils {
 
     @SuppressFBWarnings
-    public static Collection<Job> findProjectsWithProperty(final Class<? extends JobProperty> property) {
+    public static Collection<Job> findJobsWithProperty(final Class<? extends JobProperty> property) {
         List<Job> projects = Jenkins.getInstance().getAllItems(Job.class);
         return Collections2.filter(projects, new Predicate<Job>() {
             @Override
@@ -36,13 +36,13 @@ public class JobUtils {
     }
 
     /**
-     * Get a project by its fullName (including any folder structure if present).
+     * Get a job by its fullName (including any folder structure if present).
      *
-     * @param fullName full name of the project
-     * @return project identified by the full name or {@code null} if not found
+     * @param fullName full name of the job
+     * @return job identified by the full name or {@code null} if not found
      */
     @SuppressFBWarnings
-    public static Job findProject(String fullName) {
+    public static Job findJob(String fullName) {
         List<Job> projects = Jenkins.getInstance().getAllItems(Job.class);
         for (Job project : projects) {
             if (fullName.equals(project.getFullName())) {
@@ -53,30 +53,31 @@ public class JobUtils {
     }
 
     /**
-     * Silently saves the project without triggering any save events.
-     * Use this method to save a project from within an Update event handler.
+     * Silently saves the job without triggering any save events.
+     * Use this method to save a job from within an Update event handler.
      *
-     * @param project project to be saved
+     * @param job project to be saved
      * @throws IOException if unable to save the project
      */
-    public static void silentSave(Job project) throws IOException {
-        project.getConfigFile().write(project);
+    public static void silentSave(Job job) throws IOException {
+        job.getConfigFile().write(job);
     }
 
     /**
      * Copied from 1.580.3 {@link AbstractItem#updateByXml(javax.xml.transform.Source)}, removing the save event and
-     * returning the project after the update.
+     * returning the job after the update.
+     * FIXME update
      *
-     * @param project project to persist
-     * @param source  configuration to be persisted
-     * @return project as returned by {@link #findProject(String)}
-     * @throws IOException if unable to persist the project
+     * @param job    job to persist
+     * @param source configuration to be persisted
+     * @return project as returned by {@link #findJob(String)}
+     * @throws IOException if unable to persist
      */
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings
-    public static Job updateProjectWithXmlSource(final Job project, Source source) throws IOException {
+    public static Job updateJobWithXmlSource(final Job job, Source source) throws IOException {
 
-        XmlFile configXmlFile = project.getConfigFile();
+        XmlFile configXmlFile = job.getConfigFile();
         AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
         try {
             try {
@@ -93,16 +94,16 @@ public class JobUtils {
             }
 
             // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(project);
-            if (o != project) {
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(job);
+            if (o != job) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type
-                throw new IOException("Expecting " + project.getClass() + " but got " + o.getClass() + " instead");
+                throw new IOException("Expecting " + job.getClass() + " but got " + o.getClass() + " instead");
             }
             Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
                 @Override
                 public Void call() throws IOException {
-                    project.onLoad(project.getParent(), project.getRootDir().getName());
+                    job.onLoad(job.getParent(), job.getRootDir().getName());
                     return null;
                 }
             });
@@ -110,7 +111,7 @@ public class JobUtils {
 
             // if everything went well, commit this new version
             out.commit();
-            return findProject(project.getFullName());
+            return findJob(job.getFullName());
         } finally {
             out.abort(); // don't leave anything behind
         }
@@ -120,12 +121,12 @@ public class JobUtils {
     private static final String WORKFLOW_JOB_CLASS = "org.jenkinsci.plugins.workflow.job.WorkflowJob";
 
     /**
-     * Verifies if the the plugin applies to the Jenkins job type.
+     * Verifies if this template plugin applies to the Jenkins job type.
      *
      * @param jobType Jenkins job type.
-     * @return {@code true} if it is either an {@value #ABSTRACT_PROJECT_CLASS} or a {@value #WORKFLOW_JOB_CLASS}.
+     * @return {@code true} if it is a supported type.
      */
-    public static boolean isPluginApplicableTo(Class<? extends Job> jobType) {
+    public static boolean canBeTemplated(Class<? extends Job> jobType) {
         return EzReflectionUtils.isAssignable(ABSTRACT_PROJECT_CLASS, jobType)
                 || EzReflectionUtils.isAssignable(WORKFLOW_JOB_CLASS, jobType);
     }

@@ -92,7 +92,7 @@ public class JobParametersExclusion extends JobPropertyExclusion<Job> {
      * @return list retaining the order of rr elements then ll
      */
     private static <T> List<T> merge(Queue<T> ll, Queue<T> rr) {
-        List<T> result = new ArrayList<T>(max(ll.size(), rr.size()));
+        List<T> result = new ArrayList<T>(Math.max(ll.size(), rr.size()));
 
         T l = ll.poll();
         T r = rr.poll();

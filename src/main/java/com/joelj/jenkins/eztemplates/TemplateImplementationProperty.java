@@ -5,14 +5,13 @@ import com.joelj.jenkins.eztemplates.exclusion.*;
 import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
 import hudson.Extension;
 import hudson.model.AbstractProject;
-import hudson.model.Job;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
 import java.util.List;
 
 // TODO move this class to .project and use xstream alias for compatibility
-public class TemplateImplementationProperty extends AbstractTemplateImplementationProperty<Job<?, ?>> {
+public class TemplateImplementationProperty extends AbstractTemplateImplementationProperty<AbstractProject<?, ?>> {
 
     private static final Exclusions EXCLUSION_DEFINITIONS = new ProjectExclusions();
 
@@ -113,7 +112,7 @@ public class TemplateImplementationProperty extends AbstractTemplateImplementati
 
     @SuppressWarnings("UnusedDeclaration")
     @Extension
-    public static class TemplateImplementationPropertyDescriptor extends AbstractTemplateImplmentationPropertyDescriptor {
+    public static class TemplateImplementationPropertyDescriptor extends AbstractTemplateImplementationPropertyDescriptor {
 
         public TemplateImplementationPropertyDescriptor() {
             super(AbstractProject.class);

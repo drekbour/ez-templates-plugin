@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class ProjectExclusions implements Exclusions {
 
-    private static final Map<String, Exclusion> ALL;
+    public static final Map<String, Exclusion> ALL; // TODO !public
     private static final List<String> DEFAULT;
 
     public static final String MATRIX_SECURITY_ID = "matrix-auth";

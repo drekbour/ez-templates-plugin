@@ -125,7 +125,7 @@ public class TemplateUtils {
         BufferedReader reader = new BufferedReader(new FileReader(templateConfigFile));
         try {
             Source source = new StreamSource(reader);
-            implementationProject = JobUtils.updateProjectWithXmlSource(implementationProject, source);
+            implementationProject = JobUtils.updateJobWithXmlSource(implementationProject, source);
         } finally {
             reader.close();
         }
