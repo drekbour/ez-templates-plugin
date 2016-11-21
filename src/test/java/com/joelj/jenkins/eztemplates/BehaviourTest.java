@@ -52,8 +52,6 @@ public class BehaviourTest {
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject template2 = template("beta-template");
         TemplateImplementationPropertyDescriptor implDescriptor = new TemplateImplementationPropertyDescriptor();
-        implDescriptor.isApplicable(FreeStyleProject.class); // so doFillTemplateJobNameItems knows which types of jobs to look for
-
         // When:
         ListBoxModel knownTemplates = implDescriptor.doFillTemplateJobNameItems();
         // Then:
