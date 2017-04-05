@@ -61,8 +61,8 @@ public class TemplateUtils {
     }
 
     public static void handleTemplateImplementationSaved(AbstractProject implementationProject, TemplateImplementationProperty property) throws IOException {
-        if (property.getTemplateJobName().equals("null")) {
-            LOG.warning(String.format("Implementation [%s] but has no template selected.", implementationProject.getFullDisplayName()));
+        if (property.getTemplateJobName() == null) {
+            LOG.warning(String.format("Implementation [%s] has no template selected.", implementationProject.getFullDisplayName()));
             return;
         }
 
