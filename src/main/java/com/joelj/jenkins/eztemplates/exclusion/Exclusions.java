@@ -32,7 +32,7 @@ public class Exclusions {
         builder.add(new TriggersExclusion());
         builder.add(new DisabledExclusion());
         builder.add(new DescriptionExclusion());
-        builder.add(new JobPropertyExclusion(OWNERSHIP_ID, "Retain local ownership property", "com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty"));
+        builder.add(new OwnershipExclusion());
         builder.add(new JobPropertyExclusion(MATRIX_SECURITY_ID, "Retain local matrix-build security", "hudson.security.AuthorizationMatrixProperty"));
         builder.add(new JobPropertyExclusion(GITHUB_ID, "Retain local Github details", "com.coravy.hudson.plugins.github.GithubProjectProperty"));
         builder.add(new ScmExclusion());
@@ -68,10 +68,10 @@ public class Exclusions {
 
     @SuppressFBWarnings
     public static String checkPlugin(String id) {
-        return Jenkins.getInstance().getPlugin(id)==null?String.format("Plugin %s is not installed", id):null;
+        return Jenkins.getInstance().getPlugin(id) == null ? String.format("Plugin %s is not installed", id) : null;
     }
 
-    private static final Function<Exclusion,Exclusion> CLONER = new Function<Exclusion,Exclusion>() {
+    private static final Function<Exclusion, Exclusion> CLONER = new Function<Exclusion, Exclusion>() {
         @Override
         public Exclusion apply(@Nonnull Exclusion exclusion) {
             try {
