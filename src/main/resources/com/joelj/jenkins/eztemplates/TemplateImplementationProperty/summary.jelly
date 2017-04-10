@@ -1,0 +1,19 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
+         xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <j:set var="helper" value="${it.helper()}"/>
+  <span class="pane-frame pane-header">
+  <img src="${rootURL}/images/32x32/plugin.png" />
+  <em>ez-templates</em>:
+  <j:set var="template" value="${it.findTemplate()}"/>
+  <j:choose>
+    <j:when test="${template != null}">
+    This job implements
+    <a href="${rootURL}/${template.url}">${template.fullDisplayName}</a>
+    </j:when>
+    <j:otherwise>
+      This job is missing its template
+    </j:otherwise>
+  </j:choose>
+  </span>
+</j:jelly>
