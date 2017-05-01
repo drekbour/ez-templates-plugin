@@ -4,10 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
-import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
-import hudson.model.Items;
-import hudson.model.JobProperty;
+import hudson.model.*;
 import hudson.triggers.Trigger;
 import hudson.util.AtomicFileWriter;
 import jenkins.model.Jenkins;
@@ -117,6 +114,21 @@ public class ProjectUtils {
         } finally {
             out.abort(); // don't leave anything behind
         }
+    }
+
+    /**
+     * @param item         A job of some kind
+     * @param propertyType The property to look for
+     * @return null if this property isn't found
+     */
+    @SuppressWarnings("unchecked")
+    public static <J extends JobProperty> J getProperty(Object item, Class<J> propertyType) {
+        // TODO Does this method already exist somewhere in Jenkins?
+        // TODO bad home for this method
+        if (item instanceof Job) {
+            return (J) ((Job) item).getProperty(propertyType); // Why do we need to cast to J?
+        }
+        return null;
     }
 
     public static List<Trigger<?>> getTriggers(AbstractProject implementationProject) {

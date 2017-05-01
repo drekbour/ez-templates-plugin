@@ -6,6 +6,8 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.listeners.ItemListener;
 
+import static com.joelj.jenkins.eztemplates.utils.ProjectUtils.getProperty;
+
 
 /**
  * Listens to changes only on {@link Job}s with a given {@link hudson.model.JobProperty}.
@@ -126,21 +128,6 @@ public abstract class PropertyListener<J extends JobProperty> extends ItemListen
      * @see ItemListener#onUpdated(Item)
      */
     public void onUpdatedProperty(Job item, J property) throws Exception {
-    }
-
-    /**
-     * @param item         A job of some kind
-     * @param propertyType The property to look for
-     * @return null if this property isn't found
-     */
-    @SuppressWarnings("unchecked")
-    public static <J extends JobProperty> J getProperty(Item item, Class<J> propertyType) {
-        // TODO Does this method already exist somewhere in Jenkins?
-        // TODO bad home for this method
-        if (item instanceof Job) {
-            return (J) ((Job) item).getProperty(propertyType); // Why do we need to cast to J?
-        }
-        return null;
     }
 
 }

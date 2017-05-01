@@ -135,8 +135,7 @@ public class TemplateUtils {
      * @return null if this is not a template implementation project
      */
     private static TemplateImplementationProperty getTemplateImplementationProperty(Item item) {
-        return PropertyListener.getProperty(item, TemplateImplementationProperty.class);
+        return ProjectUtils.getProperty(item, TemplateImplementationProperty.class);
     }
-
 
 }
