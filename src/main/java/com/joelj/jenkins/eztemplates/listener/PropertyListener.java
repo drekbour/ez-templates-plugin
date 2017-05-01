@@ -1,4 +1,4 @@
-package com.joelj.jenkins.eztemplates.utils;
+package com.joelj.jenkins.eztemplates.listener;
 
 import com.google.common.base.Throwables;
 import hudson.model.Item;
