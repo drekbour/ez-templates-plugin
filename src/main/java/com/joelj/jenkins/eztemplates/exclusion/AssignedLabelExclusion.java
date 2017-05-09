@@ -3,11 +3,10 @@ package com.joelj.jenkins.eztemplates.exclusion;
 import com.google.common.base.Throwables;
 import hudson.model.AbstractProject;
 import hudson.model.Label;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
-public class AssignedLabelExclusion extends HardCodedExclusion {
+public class AssignedLabelExclusion extends AbstractExclusion {
 
     public static final String ID = "assigned-label";
     private Label label;

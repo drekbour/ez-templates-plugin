@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * Generic {@link Exclusion} which retains a given {@link JobProperty} through cloning
  */
-public class JobPropertyExclusion extends HardCodedExclusion {
+public class JobPropertyExclusion extends AbstractExclusion {
     private final String id;
     private final String description;
     private final String className;

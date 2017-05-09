@@ -2,9 +2,8 @@ package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 
-public class DisabledExclusion extends HardCodedExclusion {
+public class DisabledExclusion extends AbstractExclusion {
 
     public static final String ID = "disabled";
     private boolean disabled;

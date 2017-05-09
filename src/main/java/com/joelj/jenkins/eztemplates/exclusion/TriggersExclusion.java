@@ -4,12 +4,11 @@ import com.joelj.jenkins.eztemplates.utils.ProjectUtils;
 import hudson.model.AbstractProject;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
-import jenkins.model.Jenkins;
 
 import java.util.List;
 import java.util.Map;
 
-public class TriggersExclusion extends HardCodedExclusion {
+public class TriggersExclusion extends AbstractExclusion {
 
     public static final String ID = "build-triggers";
     private Map<TriggerDescriptor, Trigger> oldTriggers;

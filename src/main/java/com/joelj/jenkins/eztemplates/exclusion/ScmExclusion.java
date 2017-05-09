@@ -3,11 +3,10 @@ package com.joelj.jenkins.eztemplates.exclusion;
 import com.google.common.base.Throwables;
 import hudson.model.AbstractProject;
 import hudson.scm.SCM;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
-public class ScmExclusion extends HardCodedExclusion {
+public class ScmExclusion extends AbstractExclusion {
 
     public static final String ID = "scm";
     private SCM scm;

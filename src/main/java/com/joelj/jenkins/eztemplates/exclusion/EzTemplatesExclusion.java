@@ -7,11 +7,10 @@ import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.JobProperty;
-import jenkins.model.Jenkins;
 
 import java.io.IOException;
 
-public class EzTemplatesExclusion extends HardCodedExclusion {
+public class EzTemplatesExclusion extends AbstractExclusion {
 
     public static final String ID = "ez-templates";
     private String displayName;

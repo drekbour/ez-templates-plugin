@@ -2,7 +2,7 @@ package com.joelj.jenkins.eztemplates.exclusion;
 
 import hudson.model.AbstractProject;
 
-public abstract class HardCodedExclusion implements Exclusion {
+public abstract class AbstractExclusion implements Exclusion {
 
     /**
      * Capture content we want to keep. There will be a unique instance of an Exclusion per invocation so
@@ -13,7 +13,7 @@ public abstract class HardCodedExclusion implements Exclusion {
     public abstract void preClone(AbstractProject implementationProject);
 
     /**
-     * Restore content we kept - usually via reflection to prevent infinite save recursion
+     * Restore content we kept - usually via reflection to prevent infinite save recursion.
      *
      * @param implementationProject The child project immediately after it has been XML-cloned from its template.
      *                              Note it will be amended by successive {@link Exclusion}s so the overall state is

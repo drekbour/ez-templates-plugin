@@ -2,9 +2,9 @@ package com.joelj.jenkins.eztemplates.utils;
 
 import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
 import com.joelj.jenkins.eztemplates.TemplateProperty;
+import com.joelj.jenkins.eztemplates.exclusion.AbstractExclusion;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
-import com.joelj.jenkins.eztemplates.exclusion.HardCodedExclusion;
 import com.joelj.jenkins.eztemplates.promotedbuilds.PromotedBuildsTemplateUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractProject;
@@ -81,7 +81,7 @@ public class TemplateUtils {
         // Capture values we want to keep
         for (Exclusion exclusion : exclusions) {
             try {
-                ((HardCodedExclusion) exclusion).preClone(implementationProject);
+                ((AbstractExclusion) exclusion).preClone(implementationProject);
             } catch (RuntimeException e) {
                 LOG.log(Level.WARNING, String.format("Templating failed analyse %s", exclusion), e);
                 throw e; // Fail immediately on any pre-clone issue
@@ -90,11 +90,11 @@ public class TemplateUtils {
 
         implementationProject = cloneTemplate(implementationProject, templateProject);
 
-        // Restore values we want to keep - via reflection to prevent infinite save recursion
+        // Restore values we kept
         boolean failure = false;
         for (Exclusion exclusion : exclusions) {
             try {
-                ((HardCodedExclusion) exclusion).postClone(implementationProject);
+                ((AbstractExclusion) exclusion).postClone(implementationProject);
             } catch (RuntimeException e) {
                 LOG.log(Level.WARNING, String.format("Templating failed apply %s", exclusion), e);
                 // since we've already cloned the template to the filesystem, attempt to apply all exclusions
@@ -134,7 +134,7 @@ public class TemplateUtils {
      * @param item A job of some kind
      * @return null if this is not a template implementation project
      */
-    private static TemplateImplementationProperty getTemplateImplementationProperty(Item item) {
+    public static TemplateImplementationProperty getTemplateImplementationProperty(Item item) {
         return PropertyListener.getProperty(item, TemplateImplementationProperty.class);
     }
 

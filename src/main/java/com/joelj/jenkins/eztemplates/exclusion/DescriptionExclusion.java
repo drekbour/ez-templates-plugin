@@ -3,9 +3,8 @@ package com.joelj.jenkins.eztemplates.exclusion;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 
-public class DescriptionExclusion extends HardCodedExclusion {
+public class DescriptionExclusion extends AbstractExclusion {
 
     public static final String ID = "description";
     private String description;

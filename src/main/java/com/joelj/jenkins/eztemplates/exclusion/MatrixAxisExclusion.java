@@ -3,11 +3,10 @@ package com.joelj.jenkins.eztemplates.exclusion;
 import com.google.common.base.Throwables;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 
 import java.lang.reflect.Method;
 
-public class MatrixAxisExclusion extends HardCodedExclusion {
+public class MatrixAxisExclusion extends AbstractExclusion {
 
     public static final String ID = "matrix-axis";
     private static final String MATRIX_PROJECT = "hudson.matrix.MatrixProject";
