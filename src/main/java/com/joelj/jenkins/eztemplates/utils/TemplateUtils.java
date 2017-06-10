@@ -5,11 +5,9 @@ import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
-import com.joelj.jenkins.eztemplates.promotedbuilds.PromotedBuildsTemplateUtils;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
-import jenkins.model.Jenkins;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
@@ -113,15 +111,6 @@ public class TemplateUtils {
 
     @SuppressFBWarnings
     private static AbstractProject cloneTemplate(AbstractProject implementationProject, AbstractProject templateProject) throws IOException {
-        AbstractProject cloned = synchronizeConfigFiles(implementationProject, templateProject);
-        if (Jenkins.getInstance().getPlugin("promoted-builds") != null) {
-            PromotedBuildsTemplateUtils.addPromotions(cloned, templateProject);
-        }
-        return cloned;
-    }
-
-    @SuppressFBWarnings
-    private static AbstractProject synchronizeConfigFiles(AbstractProject implementationProject, AbstractProject templateProject) throws IOException {
         File templateConfigFile = templateProject.getConfigFile().getFile();
         BufferedReader reader = new BufferedReader(new FileReader(templateConfigFile));
         try {

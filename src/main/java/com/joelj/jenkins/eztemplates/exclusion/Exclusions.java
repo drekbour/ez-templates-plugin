@@ -30,6 +30,7 @@ public class Exclusions {
         builder.add(new TriggersExclusion());
         builder.add(new DisabledExclusion());
         builder.add(new DescriptionExclusion());
+        builder.add(new PromotedBuildsExclusion());
         builder.add(new OwnershipExclusion());
         builder.add(new JobPropertyExclusion(MATRIX_SECURITY_ID, "Retain local matrix-build security", "hudson.security.AuthorizationMatrixProperty"));
         builder.add(new JobPropertyExclusion(GITHUB_ID, "Retain local Github details", "com.coravy.hudson.plugins.github.GithubProjectProperty"));
