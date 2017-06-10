@@ -61,10 +61,11 @@ public class Exclusions {
      * @return Never null
      */
     public static Collection<Exclusion> enabledExceptions() {
+        // TODO Stop ez-templates being so special!
         return Collections2.filter(ALL.values(), new Predicate<Exclusion>() {
             @Override
             public boolean apply(@Nullable Exclusion input) {
-                return input.getDisabledText() == null;
+                return EzTemplatesExclusion.ID.equals(input.getId()) || input.getDisabledText() == null;
             }
         });
     }

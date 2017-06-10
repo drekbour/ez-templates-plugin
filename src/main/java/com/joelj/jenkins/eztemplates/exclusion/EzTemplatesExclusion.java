@@ -27,7 +27,7 @@ public class EzTemplatesExclusion extends AbstractExclusion {
 
     @Override
     public String getDisabledText() {
-        return null;
+        return "Cannot unselect this one!";
     }
 
     @Override
