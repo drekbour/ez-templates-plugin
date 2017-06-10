@@ -7,17 +7,16 @@ import hudson.model.ParameterDefinition;
 import hudson.model.ParametersDefinitionProperty;
 
 import java.util.*;
-import java.util.logging.Logger;
 
 import static java.lang.Math.max;
 
 public class JobParametersExclusion extends JobPropertyExclusion {
 
-    private static final Logger LOG = Logger.getLogger("ez-templates");
     public static final String ID = "job-params";
+    private static final String DESCRIPTION = "Retain local job parameter values";
 
     public JobParametersExclusion() {
-        super(ID, "Retain local job parameter values", ParametersDefinitionProperty.class.getName());
+        super(ID, DESCRIPTION, ParametersDefinitionProperty.class.getName());
     }
 
     @Override

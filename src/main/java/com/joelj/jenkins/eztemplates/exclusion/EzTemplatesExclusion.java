@@ -13,21 +13,16 @@ import java.io.IOException;
 public class EzTemplatesExclusion extends AbstractExclusion {
 
     public static final String ID = "ez-templates";
+    private static final String DESCRIPTION = "Retain EZ Templates mandatory fields";
+
+    public EzTemplatesExclusion() {
+        super(ID, DESCRIPTION);
+    }
 
     private static class Data {
         String displayName;
         JobProperty templateProperty;
         JobProperty templateImplementationProperty;
-    }
-
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain EZ Templates mandatory fields";
     }
 
     @Override

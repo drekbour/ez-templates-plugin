@@ -11,15 +11,11 @@ import java.util.Map;
 public class TriggersExclusion extends AbstractExclusion {
 
     public static final String ID = "build-triggers";
+    private static final String DESCRIPTION = "Retain local Build Triggers";
+    ;
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local Build Triggers";
+    public TriggersExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override

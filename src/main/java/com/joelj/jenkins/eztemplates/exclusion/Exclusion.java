@@ -2,11 +2,29 @@ package com.joelj.jenkins.eztemplates.exclusion;
 
 import hudson.model.AbstractProject;
 
+/**
+ * A template cloning exclusion (usually meaning "retain something on the implementation"). It is expected all usages
+ * extend AbstractExclusion.
+ */
 public interface Exclusion {
+
+    /**
+     * ez-templates id for this {@link Exclusion}. Generally expected to be a plugin's id.
+     *
+     * @return never null
+     */
     String getId();
 
+    /**
+     * User-visible description of the exclusion
+     * @return Something like "Retain local XYZ"
+     */
     String getDescription();
 
+    /**
+     * Determine if this exclusion is possible in the current installation
+     * @return Description of why disabled or null
+     */
     String getDisabledText();
 
     /**

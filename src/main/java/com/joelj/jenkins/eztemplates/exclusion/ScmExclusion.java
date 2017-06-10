@@ -9,15 +9,10 @@ import java.io.IOException;
 public class ScmExclusion extends AbstractExclusion {
 
     public static final String ID = "scm";
+    private static final String DESCRIPTION = "Retain local Source Code Management";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local Source Code Management";
+    public ScmExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override

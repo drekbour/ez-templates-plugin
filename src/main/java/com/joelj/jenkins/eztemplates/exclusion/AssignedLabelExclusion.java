@@ -9,15 +9,10 @@ import java.io.IOException;
 public class AssignedLabelExclusion extends AbstractExclusion {
 
     public static final String ID = "assigned-label";
+    private static final String DESCRIPTION = "Retain local assigned label";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local assigned label";
+    public AssignedLabelExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override

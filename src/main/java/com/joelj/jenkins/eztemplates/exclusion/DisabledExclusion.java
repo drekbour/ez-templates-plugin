@@ -6,15 +6,10 @@ import hudson.model.AbstractProject;
 public class DisabledExclusion extends AbstractExclusion {
 
     public static final String ID = "disabled";
+    private static final String DESCRIPTION = "Retain local disabled setting";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local disabled setting";
+    public DisabledExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override

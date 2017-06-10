@@ -20,10 +20,11 @@ import static com.joelj.jenkins.eztemplates.utils.PropertyListener.getProperty;
 public class PromotedBuildsExclusion extends JobPropertyExclusion {
 
     public static final String ID = "promoted-builds";
+    private static final String DESCRIPTION = "Retain local build promotions";
     private static final String PROPERTY_CLASSNAME = "hudson.plugins.promoted_builds.JobPropertyImpl";
 
     public PromotedBuildsExclusion() {
-        super(ID, "Retain local build promotions", PROPERTY_CLASSNAME);
+        super(ID, DESCRIPTION, PROPERTY_CLASSNAME);
     }
 
     @Override

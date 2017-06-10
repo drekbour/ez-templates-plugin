@@ -10,13 +10,11 @@ import java.io.IOException;
  * Generic {@link Exclusion} which retains a given {@link JobProperty} through cloning
  */
 public class JobPropertyExclusion extends AbstractExclusion {
-    private final String id;
-    private final String description;
+
     private final String className;
 
     public JobPropertyExclusion(String id, String description, String className) {
-        this.id = id;
-        this.description = description;
+        super(id, description);
         this.className = className;
     }
 
@@ -41,21 +39,5 @@ public class JobPropertyExclusion extends AbstractExclusion {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public String getDisabledText() {
-        // Assumes id is _also_ the plugin
-        return Exclusions.checkPlugin(id);
     }
 }

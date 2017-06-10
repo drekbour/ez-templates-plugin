@@ -7,15 +7,10 @@ import hudson.model.AbstractProject;
 public class DescriptionExclusion extends AbstractExclusion {
 
     public static final String ID = "description";
+    private static final String DESCRIPTION = "Retain local description";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local description";
+    public DescriptionExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
