@@ -1,17 +1,15 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
+import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
-import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +30,7 @@ public class Exclusions {
         builder.add(new TriggersExclusion());
         builder.add(new DisabledExclusion());
         builder.add(new DescriptionExclusion());
+        builder.add(new PromotedBuildsExclusion());
         builder.add(new OwnershipExclusion());
         builder.add(new JobPropertyExclusion(MATRIX_SECURITY_ID, "Retain local matrix-build security", "hudson.security.AuthorizationMatrixProperty"));
         builder.add(new JobPropertyExclusion(GITHUB_ID, "Retain local Github details", "com.coravy.hudson.plugins.github.GithubProjectProperty"));
@@ -57,29 +56,23 @@ public class Exclusions {
     }
 
     /**
-     * Exclusions relevant to the given implementation
+     * {@link Exclusion}s currently enabled in Jenkins.
+     *
+     * @return Never null
      */
-    public static Collection<Exclusion> configuredExclusions(TemplateImplementationProperty property) {
-        return Lists.newArrayList(Collections2.transform(
-                Maps.filterKeys(ALL, Predicates.in(property.getExclusions())).values(),
-                CLONER
-        ));
+    public static Collection<Exclusion> enabledExceptions() {
+        // TODO Stop ez-templates being so special!
+        return Collections2.filter(ALL.values(), new Predicate<Exclusion>() {
+            @Override
+            public boolean apply(@Nullable Exclusion input) {
+                return EzTemplatesExclusion.ID.equals(input.getId()) || input.getDisabledText() == null;
+            }
+        });
     }
 
     @SuppressFBWarnings
     public static String checkPlugin(String id) {
         return Jenkins.getInstance().getPlugin(id) == null ? String.format("Plugin %s is not installed", id) : null;
     }
-
-    private static final Function<Exclusion, Exclusion> CLONER = new Function<Exclusion, Exclusion>() {
-        @Override
-        public Exclusion apply(@Nonnull Exclusion exclusion) {
-            try {
-                return exclusion.clone();
-            } catch (CloneNotSupportedException e) {
-                throw Throwables.propagate(e);
-            }
-        }
-    };
 
 }

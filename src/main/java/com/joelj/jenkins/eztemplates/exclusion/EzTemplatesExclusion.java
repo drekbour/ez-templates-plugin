@@ -13,18 +13,16 @@ import java.io.IOException;
 public class EzTemplatesExclusion extends AbstractExclusion {
 
     public static final String ID = "ez-templates";
-    private String displayName;
-    private JobProperty templateProperty;
-    private JobProperty templateImplementationProperty;
+    private static final String DESCRIPTION = "Retain EZ Templates mandatory fields";
 
-    @Override
-    public String getId() {
-        return ID;
+    public EzTemplatesExclusion() {
+        super(ID, DESCRIPTION);
     }
 
-    @Override
-    public String getDescription() {
-        return "Retain EZ Templates mandatory fields";
+    private static class Data {
+        String displayName;
+        JobProperty templateProperty;
+        JobProperty templateImplementationProperty;
     }
 
     @Override
@@ -33,33 +31,36 @@ public class EzTemplatesExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        displayName = implementationProject.getDisplayNameOrNull();
-        templateProperty = implementationProject.getProperty(TemplateProperty.class);
-        templateImplementationProperty = implementationProject.getProperty(TemplateImplementationProperty.class);
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        Data data = new Data();
+        data.displayName = implementationProject.getDisplayNameOrNull();
+        data.templateProperty = implementationProject.getProperty(TemplateProperty.class);
+        data.templateImplementationProperty = implementationProject.getProperty(TemplateImplementationProperty.class);
+        context.record(data);
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         try {
-            fixProperties(implementationProject);
+            fixProperties((Data) context.remember(), implementationProject);
         } catch (IOException e) {
             Throwables.propagate(e);
         }
     }
 
-    private void fixProperties(AbstractProject implementationProject) throws IOException {
+    private void fixProperties(Data data, AbstractProject implementationProject) throws IOException {
+        EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "displayName", data.displayName);
 
-        EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "displayName", displayName);
-
-        implementationProject.removeProperty(templateImplementationProperty.getClass()); // If parent template is also an imple of a grand-parent
-        implementationProject.addProperty(templateImplementationProperty);
+        implementationProject.removeProperty(data.templateImplementationProperty.getClass()); // If parent template is also an imple of a grand-parent
+        implementationProject.addProperty(data.templateImplementationProperty);
 
         // Remove the cloned TemplateProperty belonging to the template
         implementationProject.removeProperty(TemplateProperty.class);
-        if (templateProperty != null) {
+        if (data.templateProperty != null) {
             // !null means the Impl is _also_ a template for grand-children.
-            implementationProject.addProperty(templateProperty);
+            implementationProject.addProperty(data.templateProperty);
         }
     }
 

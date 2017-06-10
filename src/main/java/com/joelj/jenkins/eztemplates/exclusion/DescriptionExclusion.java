@@ -7,16 +7,10 @@ import hudson.model.AbstractProject;
 public class DescriptionExclusion extends AbstractExclusion {
 
     public static final String ID = "description";
-    private String description;
+    private static final String DESCRIPTION = "Retain local description";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local description";
+    public DescriptionExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
@@ -25,12 +19,15 @@ public class DescriptionExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        description = implementationProject.getDescription();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getDescription());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        String description = context.remember();
         EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "description", description);
     }
 

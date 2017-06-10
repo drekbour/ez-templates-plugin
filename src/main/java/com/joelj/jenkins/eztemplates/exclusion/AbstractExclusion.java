@@ -1,42 +1,47 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import hudson.model.AbstractProject;
+import java.util.logging.Logger;
 
+/**
+ * It is expected that all {@link Exclusion}s extend this. Implementations should use the inherited logger for any
+ * messages!
+ */
 public abstract class AbstractExclusion implements Exclusion {
 
-    /**
-     * Capture content we want to keep. There will be a unique instance of an Exclusion per invocation so
-     * instance fields are appropriate.
-     *
-     * @param implementationProject The child project before and any processing.
-     */
-    public abstract void preClone(AbstractProject implementationProject);
+    protected static final Logger LOG = Logger.getLogger("ez-templates");
+
+    private final String id;
+    private final String description;
+
+    protected AbstractExclusion(String id, String description) {
+        this.id = id;
+        this.description = description;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getDescription() {
+        return description;
+    }
 
     /**
-     * Restore content we kept - usually via reflection to prevent infinite save recursion.
+     * Default implementation assumes the Exclusion's {@link #getId} is the plugin id so just checks to see
+     * if it is currently installed.
      *
-     * @param implementationProject The child project immediately after it has been XML-cloned from its template.
-     *                              Note it will be amended by successive {@link Exclusion}s so the overall state is
-     *                              indeterminate although each individual {@link Exclusion} can presume its personal
-     *                              view of the Job currently looks exactly like the template.
-     * @see com.joelj.jenkins.eztemplates.utils.EzReflectionUtils
+     * @return non-null if plugin is unavailable
      */
-    public abstract void postClone(AbstractProject implementationProject);
+    @Override
+    public String getDisabledText() {
+        return Exclusions.checkPlugin(getId());
+    }
 
     @Override
     public String toString() {
         return String.format("%s[%s]", getClass().getSimpleName(), getId());
-    }
-
-    /**
-     * Called as part of a basic Prototype Pattern.
-     *
-     * @return unique instance of this {@link Exclusion}
-     * @throws CloneNotSupportedException N/A
-     */
-    @Override
-    public Exclusion clone() throws CloneNotSupportedException {
-        return (Exclusion) super.clone();
     }
 
 }

@@ -9,16 +9,10 @@ import java.io.IOException;
 public class ScmExclusion extends AbstractExclusion {
 
     public static final String ID = "scm";
-    private SCM scm;
+    private static final String DESCRIPTION = "Retain local Source Code Management";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local Source Code Management";
+    public ScmExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
@@ -27,12 +21,15 @@ public class ScmExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        scm = implementationProject.getScm();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getScm());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        SCM scm = context.remember();
         try {
             implementationProject.setScm(scm);
         } catch (IOException e) {
