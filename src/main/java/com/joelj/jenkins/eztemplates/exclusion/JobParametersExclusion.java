@@ -21,12 +21,14 @@ public class JobParametersExclusion extends JobPropertyExclusion {
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
-        super.cached = merge(
-                parameters((ParametersDefinitionProperty) cached),
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        ParametersDefinitionProperty cached = context.remember();
+        context.record(merge(
+                parameters(cached),
                 parameters(implementationProject)
-        );
-        super.postClone(implementationProject);
+        ));
+        super.postClone(context, implementationProject);
     }
 
     @Override

@@ -9,7 +9,6 @@ import java.io.IOException;
 public class AssignedLabelExclusion extends AbstractExclusion {
 
     public static final String ID = "assigned-label";
-    private Label label;
 
     @Override
     public String getId() {
@@ -27,13 +26,16 @@ public class AssignedLabelExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        label = implementationProject.getAssignedLabel();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getAssignedLabel());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         try {
+            Label label = context.remember();
             implementationProject.setAssignedLabel(label);
         } catch (IOException e) {
             Throwables.propagate(e);

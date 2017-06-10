@@ -9,7 +9,6 @@ import java.io.IOException;
 public class ScmExclusion extends AbstractExclusion {
 
     public static final String ID = "scm";
-    private SCM scm;
 
     @Override
     public String getId() {
@@ -27,12 +26,15 @@ public class ScmExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        scm = implementationProject.getScm();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getScm());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        SCM scm = context.remember();
         try {
             implementationProject.setScm(scm);
         } catch (IOException e) {

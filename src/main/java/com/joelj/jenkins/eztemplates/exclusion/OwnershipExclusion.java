@@ -2,6 +2,7 @@ package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.google.common.base.Throwables;
 import hudson.model.AbstractProject;
+import hudson.model.JobProperty;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -18,9 +19,11 @@ public class OwnershipExclusion extends JobPropertyExclusion {
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         // JENKINS-43293 It's permissable for template to never have had ownership instantiated. This looks the same
         // to the user as setting it explicitly to "unknown" but is not the same to ez.
+        JobProperty cached = context.remember();
         try {
             if (cached != null) {
                 if (implementationProject.removeProperty(cached.getClass()) == null) {

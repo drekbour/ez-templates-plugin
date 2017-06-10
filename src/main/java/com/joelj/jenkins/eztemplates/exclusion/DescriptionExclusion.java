@@ -7,7 +7,6 @@ import hudson.model.AbstractProject;
 public class DescriptionExclusion extends AbstractExclusion {
 
     public static final String ID = "description";
-    private String description;
 
     @Override
     public String getId() {
@@ -25,12 +24,15 @@ public class DescriptionExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        description = implementationProject.getDescription();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getDescription());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        String description = context.remember();
         EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "description", description);
     }
 

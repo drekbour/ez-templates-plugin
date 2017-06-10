@@ -13,7 +13,6 @@ public class JobPropertyExclusion extends AbstractExclusion {
     private final String id;
     private final String description;
     private final String className;
-    protected JobProperty cached;
 
     public JobPropertyExclusion(String id, String description, String className) {
         this.id = id;
@@ -22,13 +21,16 @@ public class JobPropertyExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        cached = implementationProject.getProperty(className);
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getProperty(className));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        JobProperty cached = context.remember();
         try {
             if (cached != null) {
                 // Removed from template = removed from all impls

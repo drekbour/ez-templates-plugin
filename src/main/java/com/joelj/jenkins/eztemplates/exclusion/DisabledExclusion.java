@@ -6,7 +6,6 @@ import hudson.model.AbstractProject;
 public class DisabledExclusion extends AbstractExclusion {
 
     public static final String ID = "disabled";
-    private boolean disabled;
 
     @Override
     public String getId() {
@@ -24,12 +23,15 @@ public class DisabledExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        disabled = implementationProject.isDisabled();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.isDisabled());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        Boolean disabled = context.remember();
         EzReflectionUtils.setFieldValue(AbstractProject.class, implementationProject, "disabled", disabled);
     }
 

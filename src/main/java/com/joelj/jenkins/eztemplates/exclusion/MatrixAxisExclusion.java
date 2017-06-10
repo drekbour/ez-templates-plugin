@@ -10,7 +10,6 @@ public class MatrixAxisExclusion extends AbstractExclusion {
 
     public static final String ID = "matrix-axis";
     private static final String MATRIX_PROJECT = "hudson.matrix.MatrixProject";
-    private Object axes; // AxesList
 
     @Override
     public String getId() {
@@ -28,16 +27,18 @@ public class MatrixAxisExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         if (isMatrixProject(implementationProject)) {
-            axes = EzReflectionUtils.getFieldValue(implementationProject.getClass(), implementationProject, "axes");
+            context.record(EzReflectionUtils.getFieldValue(implementationProject.getClass(), implementationProject, "axes"));
         }
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         if (isMatrixProject(implementationProject)) {
-            fixAxisList(implementationProject, axes);
+            fixAxisList(implementationProject, context.remember());
         }
     }
 

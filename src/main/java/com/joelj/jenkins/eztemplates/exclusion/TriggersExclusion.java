@@ -11,7 +11,6 @@ import java.util.Map;
 public class TriggersExclusion extends AbstractExclusion {
 
     public static final String ID = "build-triggers";
-    private Map<TriggerDescriptor, Trigger> oldTriggers;
 
     @Override
     public String getId() {
@@ -29,12 +28,15 @@ public class TriggersExclusion extends AbstractExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        oldTriggers = implementationProject.getTriggers();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getTriggers());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        Map<TriggerDescriptor, Trigger> oldTriggers = context.remember();
         fixBuildTriggers(implementationProject, oldTriggers);
     }
 
