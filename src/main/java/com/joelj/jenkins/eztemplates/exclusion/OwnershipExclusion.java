@@ -10,7 +10,7 @@ public class OwnershipExclusion extends JobPropertyExclusion {
 
     public static final String ID = "ownership";
     private static final String DESCRIPTION = "Retain local ownership property";
-    private static final String PROPERTY_CLASSNAME = "com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty";
+    static final String PROPERTY_CLASSNAME = "com.synopsys.arc.jenkins.plugins.ownership.jobs.JobOwnerJobProperty";
 
     public OwnershipExclusion() {
         super(ID, DESCRIPTION, PROPERTY_CLASSNAME);

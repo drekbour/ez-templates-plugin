@@ -9,7 +9,6 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import jenkins.model.Jenkins;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class Exclusions {
         // TODO Stop ez-templates being so special!
         return Collections2.filter(ALL.values(), new Predicate<Exclusion>() {
             @Override
-            public boolean apply(@Nullable Exclusion input) {
+            public boolean apply(@Nonnull Exclusion input) {
                 return EzTemplatesExclusion.ID.equals(input.getId()) || input.getDisabledText() == null;
             }
         });
