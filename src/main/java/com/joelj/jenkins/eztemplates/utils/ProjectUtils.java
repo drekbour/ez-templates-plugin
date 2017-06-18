@@ -62,14 +62,6 @@ public class ProjectUtils {
     }
 
     /**
-     * Silently saves the project without triggering any save events.
-     * Use this method to save a project from within an Update event handler.
-     */
-    public static void silentSave(AbstractProject project) throws IOException {
-        project.getConfigFile().write(project);
-    }
-
-    /**
      * Copied from 1.580.3 {@link AbstractItem#updateByXml(javax.xml.transform.Source)}, removing the save event and
      * returning the project after the update.
      */

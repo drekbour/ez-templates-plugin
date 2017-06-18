@@ -6,6 +6,7 @@ import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.BulkChange;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 
@@ -34,7 +35,7 @@ public class TemplateUtils {
         for (AbstractProject impl : property.getImplementations()) {
             LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
             impl.removeProperty(TemplateImplementationProperty.class);
-            ProjectUtils.silentSave(impl);
+            impl.save();
         }
     }
 
@@ -45,7 +46,7 @@ public class TemplateUtils {
             TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
             if (oldFullName.equals(implProperty.getTemplateJobName())) {
                 implProperty.setTemplateJobName(newFullName);
-                ProjectUtils.silentSave(impl);
+                impl.save();
             }
         }
     }
@@ -90,23 +91,27 @@ public class TemplateUtils {
 
         implementationProject = cloneTemplate(implementationProject, templateProject);
 
-        // Restore values we kept
-        boolean failure = false;
-        for (Exclusion exclusion : exclusions) {
-            context.setCurrentExclusionId(exclusion.getId());
-            try {
-                exclusion.postClone(context, implementationProject);
-            } catch (RuntimeException e) {
-                LOG.log(Level.WARNING, String.format("Templating failed apply %s", exclusion), e);
-                // since we've already cloned the template to the filesystem, attempt to apply all exclusions
-                failure = true;
+        // BulkChange target must be the post-cloned instance of the impl
+        BulkChange bulkChange = new BulkChange(implementationProject);
+        try {
+            // Restore values we kept
+            boolean failure = false;
+            for (Exclusion exclusion : exclusions) {
+                context.setCurrentExclusionId(exclusion.getId());
+                try {
+                    exclusion.postClone(context, implementationProject);
+                } catch (RuntimeException e) {
+                    LOG.log(Level.WARNING, String.format("Templating failed apply %s", exclusion), e);
+                    // since we've already cloned the template to the filesystem, attempt to apply all exclusions
+                    failure = true;
+                }
             }
+            if (failure) {
+                throw new RuntimeException("Templating failed, see logs");
+            }
+        } finally {
+            bulkChange.commit(); // These changes have been made in memory so should be reflected on disk.
         }
-        if (failure) {
-            throw new RuntimeException("Templating failed, see logs");
-        }
-
-        ProjectUtils.silentSave(implementationProject);
     }
 
     @SuppressFBWarnings
