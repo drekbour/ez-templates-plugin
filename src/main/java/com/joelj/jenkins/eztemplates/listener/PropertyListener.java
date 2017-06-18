@@ -114,6 +114,9 @@ public abstract class PropertyListener<J extends JobProperty> extends ItemListen
 
     @Override
     public final void onUpdated(Item item) {
+        if (EzSaveableListener.JOB_SAVE_USES_BULKCHANGE) {
+            return; // Ignore item listener updates if we trust the more general-purpose SaveableListener
+        }
         J property = getProperty(item, propertyType);
         if (property != null) {
             try {
