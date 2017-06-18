@@ -3,24 +3,17 @@ package com.joelj.jenkins.eztemplates.exclusion;
 import com.google.common.base.Throwables;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractProject;
-import jenkins.model.Jenkins;
 
 import java.lang.reflect.Method;
 
-public class MatrixAxisExclusion extends HardCodedExclusion {
+public class MatrixAxisExclusion extends AbstractExclusion {
 
     public static final String ID = "matrix-axis";
+    private static final String DESCRIPTION = "Retain local matrix axes";
     private static final String MATRIX_PROJECT = "hudson.matrix.MatrixProject";
-    private Object axes; // AxesList
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local matrix axes";
+    public MatrixAxisExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
@@ -29,16 +22,18 @@ public class MatrixAxisExclusion extends HardCodedExclusion {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         if (isMatrixProject(implementationProject)) {
-            axes = EzReflectionUtils.getFieldValue(implementationProject.getClass(), implementationProject, "axes");
+            context.record(EzReflectionUtils.getFieldValue(implementationProject.getClass(), implementationProject, "axes"));
         }
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
         if (isMatrixProject(implementationProject)) {
-            fixAxisList(implementationProject, axes);
+            fixAxisList(implementationProject, context.remember());
         }
     }
 
