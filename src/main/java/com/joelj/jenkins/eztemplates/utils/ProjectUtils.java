@@ -8,7 +8,6 @@ import hudson.model.AbstractItem;
 import hudson.model.AbstractProject;
 import hudson.model.Items;
 import hudson.model.JobProperty;
-import hudson.triggers.Trigger;
 import hudson.util.AtomicFileWriter;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -22,7 +21,6 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Collection;
 import java.util.List;
 
@@ -119,17 +117,4 @@ public class ProjectUtils {
         }
     }
 
-    public static List<Trigger<?>> getTriggers(AbstractProject implementationProject) {
-        try {
-            Field triggers = AbstractProject.class.getDeclaredField("triggers");
-            triggers.setAccessible(true);
-            Object result = triggers.get(implementationProject);
-            //noinspection unchecked
-            return (List<Trigger<?>>) result;
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

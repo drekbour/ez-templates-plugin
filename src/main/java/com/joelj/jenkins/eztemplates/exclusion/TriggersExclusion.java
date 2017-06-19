@@ -1,10 +1,10 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import com.joelj.jenkins.eztemplates.utils.ProjectUtils;
 import hudson.model.AbstractProject;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -37,7 +37,7 @@ public class TriggersExclusion extends AbstractExclusion {
     }
 
     private static void fixBuildTriggers(AbstractProject implementationProject, Map<TriggerDescriptor, Trigger> oldTriggers) {
-        List<Trigger<?>> triggersToReplace = ProjectUtils.getTriggers(implementationProject);
+        List<Trigger<?>> triggersToReplace = getTriggers(implementationProject);
         if (triggersToReplace == null) {
             throw new NullPointerException("triggersToReplace");
         }
@@ -50,6 +50,20 @@ public class TriggersExclusion extends AbstractExclusion {
                     triggersToReplace.add(trigger);
                 }
             }
+        }
+    }
+
+    private static List<Trigger<?>> getTriggers(AbstractProject implementationProject) {
+        try {
+            Field triggers = AbstractProject.class.getDeclaredField("triggers");
+            triggers.setAccessible(true);
+            Object result = triggers.get(implementationProject);
+            //noinspection unchecked
+            return (List<Trigger<?>>) result;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 }
