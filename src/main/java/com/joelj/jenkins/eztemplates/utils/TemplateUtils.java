@@ -5,6 +5,7 @@ import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
+import com.joelj.jenkins.eztemplates.listener.EzTemplateChange;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.model.AbstractProject;
@@ -33,20 +34,30 @@ public class TemplateUtils {
     public static void handleTemplateDeleted(AbstractProject templateProject, TemplateProperty property) throws IOException {
         LOG.info(String.format("Template [%s] was deleted.", templateProject.getFullDisplayName()));
         for (AbstractProject impl : property.getImplementations()) {
-            LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
-            impl.removeProperty(TemplateImplementationProperty.class);
-            impl.save();
+            EzTemplateChange change = new EzTemplateChange(impl);
+            try {
+                LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
+                impl.removeProperty(TemplateImplementationProperty.class);
+                impl.save();
+            } finally {
+                change.commit();
+            }
         }
     }
 
     public static void handleTemplateRename(AbstractProject templateProject, TemplateProperty property, String oldFullName, String newFullName) throws IOException {
         LOG.info(String.format("Template [%s] was renamed. Updating implementations.", templateProject.getFullDisplayName()));
         for (AbstractProject impl : TemplateProperty.getImplementations(oldFullName)) {
-            LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
-            TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
-            if (oldFullName.equals(implProperty.getTemplateJobName())) {
-                implProperty.setTemplateJobName(newFullName);
-                impl.save();
+            EzTemplateChange change = new EzTemplateChange(impl);
+            try {
+                LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
+                TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
+                if (oldFullName.equals(implProperty.getTemplateJobName())) {
+                    implProperty.setTemplateJobName(newFullName);
+                    impl.save();
+                }
+            } finally {
+                change.commit();
             }
         }
     }
@@ -60,21 +71,26 @@ public class TemplateUtils {
     }
 
     public static void handleTemplateImplementationSaved(AbstractProject implementationProject, TemplateImplementationProperty property) throws IOException {
-        if (property.getTemplateJobName() == null) {
-            LOG.warning(String.format("Implementation [%s] has no template selected.", implementationProject.getFullDisplayName()));
-            return;
+        EzTemplateChange change = new EzTemplateChange(implementationProject);
+        try {
+            if (property.getTemplateJobName() == null) {
+                LOG.warning(String.format("Implementation [%s] has no template selected.", implementationProject.getFullDisplayName()));
+                return;
+            }
+
+            LOG.info(String.format("Implementation [%s] syncing with [%s].", implementationProject.getFullDisplayName(), property.getTemplateJobName()));
+
+            AbstractProject templateProject = property.findTemplate();
+            if (templateProject == null) {
+                // If the template can't be found, then it's probably a bug
+                throw new IllegalStateException(String.format("Cannot find template [%s] used by implementation [%s]", property.getTemplateJobName(), implementationProject.getFullDisplayName()));
+            }
+
+            EzContext context = new EzContext(property.getExclusions());
+            applyTemplate(implementationProject, templateProject, context, Exclusions.enabledExceptions());
+        } finally {
+            change.commit();
         }
-
-        LOG.info(String.format("Implementation [%s] syncing with [%s].", implementationProject.getFullDisplayName(), property.getTemplateJobName()));
-
-        AbstractProject templateProject = property.findTemplate();
-        if (templateProject == null) {
-            // If the template can't be found, then it's probably a bug
-            throw new IllegalStateException(String.format("Cannot find template [%s] used by implementation [%s]", property.getTemplateJobName(), implementationProject.getFullDisplayName()));
-        }
-
-        EzContext context = new EzContext(property.getExclusions());
-        applyTemplate(implementationProject, templateProject, context, Exclusions.enabledExceptions());
     }
 
     private static void applyTemplate(AbstractProject implementationProject, AbstractProject templateProject, EzContext context, Collection<Exclusion> exclusions) throws IOException {
