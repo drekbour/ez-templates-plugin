@@ -42,6 +42,8 @@ Synchronisation happens whenever an implementation job or its template is saved.
 
 Only configured items (see `Advanced` section) are retained.
 
+:exclamation: External edits are not monitored, users must manually Configure>Save after changing the raw `config.xml`.
+
 #### Job Parameters
 
 One of those is the [Parameters][1] section.

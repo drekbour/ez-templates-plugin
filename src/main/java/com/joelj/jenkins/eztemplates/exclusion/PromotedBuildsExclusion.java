@@ -10,7 +10,7 @@ import hudson.plugins.promoted_builds.PromotionProcess;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import static com.joelj.jenkins.eztemplates.utils.PropertyListener.getProperty;
+import static com.joelj.jenkins.eztemplates.utils.ProjectUtils.getProperty;
 
 
 /**

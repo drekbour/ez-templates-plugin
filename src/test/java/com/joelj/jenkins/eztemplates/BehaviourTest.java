@@ -1,12 +1,13 @@
 package com.joelj.jenkins.eztemplates;
 
 import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
-import hudson.model.FreeStyleProject;
-import hudson.model.TopLevelItem;
+import com.joelj.jenkins.eztemplates.listener.VersionEvaluator;
+import hudson.BulkChange;
+import hudson.model.*;
 import hudson.model.listeners.ItemListener;
+import hudson.model.listeners.SaveableListener;
 import hudson.triggers.TimerTrigger;
 import hudson.util.ListBoxModel;
-import org.apache.commons.lang3.text.WordUtils;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -27,9 +28,7 @@ public class BehaviourTest {
     public final JenkinsRule jenkins = new JenkinsRule();
 
     private FreeStyleProject project(String name) throws Exception {
-        FreeStyleProject project = jenkins.createFreeStyleProject(name);
-        project.setDisplayName(WordUtils.capitalizeFully(name.replaceAll("[\\-]", " "))); // my-template > My Template
-        return project;
+        return jenkins.createFreeStyleProject(name);
     }
 
     private FreeStyleProject template(String name) throws Exception {
@@ -38,17 +37,43 @@ public class BehaviourTest {
         return template;
     }
 
+    private FreeStyleProject impl(String name, AbstractProject template) throws Exception {
+        return impl(name, template.getFullName());
+    }
+
     private FreeStyleProject impl(String name, String template) throws Exception {
         FreeStyleProject impl = project(name);
+        BulkChange change = new BulkChange(impl);
         impl.addProperty(TemplateImplementationProperty.newImplementation(template));
+        change.abort(); // Leaves XML unchanged, doesn't save()
         return impl;
     }
+
+
+    private void addTriggerWithoutTemplating(AbstractProject project) throws Exception {
+        BulkChange change = new BulkChange(project);
+        project.addTrigger(new TimerTrigger("* H * * *"));
+        change.abort(); // Leaves XML unchanged, doesn't save()
+        assertThat(project.getTriggers().isEmpty(), is(false));
+    }
+
+    private void save(Item project) {
+        if (VersionEvaluator.jobSaveUsesBulkchange()) {
+            SaveableListener.fireOnChange(project, Items.getConfigFile(project));
+        } else {
+            ItemListener.fireOnUpdated(project);
+        }
+    }
+
+    // Identity
 
     @Test
     public void impl_finds_known_templates() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
+        template.setDisplayName("Alpha Template");
         FreeStyleProject template2 = template("beta-template");
+        template2.setDisplayName("Beta Template");
         // When:
         ListBoxModel knownTemplates = new TemplateImplementationProperty.DescriptorImpl().doFillTemplateJobNameItems();
         // Then:
@@ -62,7 +87,7 @@ public class BehaviourTest {
     @Test
     public void impl_has_default_exclusions() throws Exception {
         // Given:
-        FreeStyleProject impl = impl("my-impl", null);
+        FreeStyleProject impl = impl("my-impl", (String) null);
         // When:
         List<String> exclusions = impl.getProperty(TemplateImplementationProperty.class).getExclusions();
         // Then:
@@ -74,7 +99,7 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         // When:
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
         // Then:
         assertThat(impl, hasTemplate("alpha-template"));
     }
@@ -84,22 +109,22 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         // When:
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
-        FreeStyleProject impl2 = impl("alpha-2", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
+        FreeStyleProject impl2 = impl("alpha-2", template);
         // Then:
         assertThat(template, hasImplementations(impl, impl2));
     }
 
-    // Property listener
+    // Listeners
 
     @Test
     public void saving_impl_initiates_a_merges() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
-        impl.addTrigger(new TimerTrigger("* H * * *"));
+        FreeStyleProject impl = impl("alpha-1", template);
+        addTriggerWithoutTemplating(impl);
         // When:
-        ItemListener.fireOnUpdated(impl);
+        save(impl);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(true));
     }
@@ -108,10 +133,10 @@ public class BehaviourTest {
     public void saving_template_initiates_a_merge() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
-        impl.addTrigger(new TimerTrigger("* H * * *"));
+        FreeStyleProject impl = impl("alpha-1", template);
+        addTriggerWithoutTemplating(impl);
         // When:
-        ItemListener.fireOnUpdated(template);
+        save(template);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(true));
     }
@@ -120,11 +145,11 @@ public class BehaviourTest {
     public void saving_something_else_works() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
         FreeStyleProject other = project("beta");
-        impl.addTrigger(new TimerTrigger("* H * * *"));
+        addTriggerWithoutTemplating(impl);
         // When:
-        ItemListener.fireOnUpdated(other);
+        save(other);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(false));
     }
@@ -133,9 +158,9 @@ public class BehaviourTest {
     public void saving_impl_with_no_template_works() throws Exception {
         // Given:
         FreeStyleProject impl = impl("alpha-1", "null"); // FIXME this really should be tested via web submission
-        impl.addTrigger(new TimerTrigger("* H * * *"));
+        addTriggerWithoutTemplating(impl);
         // When:
-        ItemListener.fireOnUpdated(impl);
+        save(impl);
         // Then:
         assertThat(impl.getTriggers().size(), is(1));
     }
@@ -144,7 +169,7 @@ public class BehaviourTest {
     public void deleting_impl_removes_from_template() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
         // When:
         impl.delete();
         // Then:
@@ -155,7 +180,7 @@ public class BehaviourTest {
     public void deleting_template_frees_an_impl() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
         // When:
         template.delete();
         // Then:
@@ -166,9 +191,9 @@ public class BehaviourTest {
     public void renaming_template_updates_impl() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
         FreeStyleProject template2 = template("beta-template");
-        FreeStyleProject impl2 = impl("beta-1", "beta-template");
+        FreeStyleProject impl2 = impl("beta-1", template2);
         // When:
         template.renameTo("gamma-template");
         // Then:
@@ -180,7 +205,7 @@ public class BehaviourTest {
     public void moving_template_updates_impl() throws Exception {
         // Given:
         FreeStyleProject template = template("alpha-template");
-        FreeStyleProject impl = impl("alpha-1", "alpha-template");
+        FreeStyleProject impl = impl("alpha-1", template);
         // When:
         template.renameTo("subfolder/alpha-template");
         // Then:

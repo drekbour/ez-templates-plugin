@@ -4,10 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
-import hudson.model.AbstractItem;
-import hudson.model.AbstractProject;
-import hudson.model.Items;
-import hudson.model.JobProperty;
+import hudson.model.*;
 import hudson.util.AtomicFileWriter;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
@@ -63,14 +60,6 @@ public class ProjectUtils {
     }
 
     /**
-     * Silently saves the project without triggering any save events.
-     * Use this method to save a project from within an Update event handler.
-     */
-    public static void silentSave(AbstractProject project) throws IOException {
-        project.getConfigFile().write(project);
-    }
-
-    /**
      * Copied from 1.580.3 {@link AbstractItem#updateByXml(javax.xml.transform.Source)}, removing the save event and
      * returning the project after the update.
      */
@@ -115,6 +104,21 @@ public class ProjectUtils {
         } finally {
             out.abort(); // don't leave anything behind
         }
+    }
+
+    /**
+     * @param item         A job of some kind
+     * @param propertyType The property to look for
+     * @return null if this property isn't found
+     */
+    @SuppressWarnings("unchecked")
+    public static <J extends JobProperty> J getProperty(Object item, Class<J> propertyType) {
+        // TODO Does this method already exist somewhere in Jenkins?
+        // TODO bad home for this method
+        if (item instanceof Job) {
+            return (J) ((Job) item).getProperty(propertyType); // Why do we need to cast to J?
+        }
+        return null;
     }
 
 }
