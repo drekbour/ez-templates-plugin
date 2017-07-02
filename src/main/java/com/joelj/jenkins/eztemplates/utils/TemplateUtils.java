@@ -25,8 +25,10 @@ public class TemplateUtils {
     private static final Logger LOG = Logger.getLogger("ez-templates");
 
     public static void handleTemplateSaved(AbstractProject templateProject, TemplateProperty property) throws IOException {
-        LOG.info(String.format("Template [%s] was saved. Syncing implementations.", templateProject.getFullDisplayName()));
-        for (AbstractProject impl : property.getImplementations()) {
+        Collection<AbstractProject> implementations = property.getImplementations();
+        String detail = implementations.isEmpty() ? "No implementations to sync." : " Syncing implementations.";
+        LOG.info(String.format("Template [%s] was saved.%s", templateProject.getFullDisplayName(), detail));
+        for (AbstractProject impl : implementations) {
             handleTemplateImplementationSaved(impl, getTemplateImplementationProperty(impl)); // ? continue on exception
         }
     }
@@ -46,8 +48,10 @@ public class TemplateUtils {
     }
 
     public static void handleTemplateRename(AbstractProject templateProject, TemplateProperty property, String oldFullName, String newFullName) throws IOException {
-        LOG.info(String.format("Template [%s] was renamed. Updating implementations.", templateProject.getFullDisplayName()));
-        for (AbstractProject impl : TemplateProperty.getImplementations(oldFullName)) {
+        Collection<AbstractProject> implementations = TemplateProperty.getImplementations(oldFullName);
+        String detail = implementations.isEmpty() ? "No implementations to sync." : " Syncing implementations.";
+        LOG.info(String.format("Template [%s] was renamed.%s", templateProject.getFullDisplayName(), detail));
+        for (AbstractProject impl : implementations) {
             EzTemplateChange change = new EzTemplateChange(impl);
             try {
                 LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
