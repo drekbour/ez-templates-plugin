@@ -1,9 +1,10 @@
 <div>
     <p>Allows you to specify another job to use as a template.</p>
     <p>
-        The implementation overwrites its config with that of the template <em>except</em> the
+        This job overwrites its config with that of the template <em>except</em> the
         <a href="https://wiki.jenkins-ci.org/display/JENKINS/Parameterized+Build">parameters</a>,
-        which retain their default values, and items covered by specific flags.
+        which retain their default values, and items covered by configured exemptions (see
+        Advanced section).
     </p>
     <p>
         Synchronisation happens whenever an implementation job or its template is saved.

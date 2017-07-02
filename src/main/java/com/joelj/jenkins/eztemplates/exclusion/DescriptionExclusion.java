@@ -4,19 +4,13 @@ import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractItem;
 import hudson.model.Job;
 
-public class DescriptionExclusion extends HardCodedExclusion<Job> {
+public class DescriptionExclusion extends AbstractExclusion<Job> {
 
     public static final String ID = "description";
-    private String description;
+    private static final String DESCRIPTION = "Retain local description";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local description";
+    public DescriptionExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
@@ -25,12 +19,15 @@ public class DescriptionExclusion extends HardCodedExclusion<Job> {
     }
 
     @Override
-    public void preClone(Job implementationProject) {
-        description = implementationProject.getDescription();
+    public void preClone(EzContext context, Job implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getDescription());
     }
 
     @Override
-    public void postClone(Job implementationProject) {
+    public void postClone(EzContext context, Job implementationProject) {
+        if (!context.isSelected()) return;
+        String description = context.remember();
         EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "description", description);
     }
 

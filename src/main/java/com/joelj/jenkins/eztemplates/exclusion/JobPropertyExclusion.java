@@ -9,26 +9,26 @@ import java.io.IOException;
 /**
  * Generic {@link Exclusion} which retains a given {@link JobProperty} through cloning
  */
-public class JobPropertyExclusion<J extends Job> extends HardCodedExclusion<J> {
-    private final String id;
-    private final String description;
+public class JobPropertyExclusion<J extends Job> extends AbstractExclusion<J> {
+
     private final String className;
-    protected JobProperty cached; // Should be JobProperty<J>
 
     public JobPropertyExclusion(String id, String description, String className) {
-        this.id = id;
-        this.description = description;
+        super(id, description);
         this.className = className;
     }
 
     @Override
-    public void preClone(J implementationProject) {
-        cached = implementationProject.getProperty(className);
+    public void preClone(EzContext context, J implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getProperty(className));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public void postClone(J implementationProject) {
+    public void postClone(EzContext context, J implementationProject) {
+        if (!context.isSelected()) return;
+        JobProperty cached = context.remember();
         try {
             if (cached != null) {
                 // Removed from template = removed from all impls
@@ -39,21 +39,5 @@ public class JobPropertyExclusion<J extends Job> extends HardCodedExclusion<J> {
         } catch (IOException e) {
             Throwables.propagate(e);
         }
-    }
-
-    @Override
-    public String getId() {
-        return id;
-    }
-
-    @Override
-    public String getDescription() {
-        return description;
-    }
-
-    @Override
-    public String getDisabledText() {
-        // Assumes id is _also_ the plugin
-        return ExclusionUtil.checkPlugin(id);
     }
 }

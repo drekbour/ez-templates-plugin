@@ -1,6 +1,6 @@
-package com.joelj.jenkins.eztemplates;
+package com.joelj.jenkins.eztemplates.listener;
 
-import com.joelj.jenkins.eztemplates.utils.PropertyListener;
+import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Extension;
 import hudson.model.Job;

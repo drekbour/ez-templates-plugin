@@ -1,26 +1,21 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractProject;
 import hudson.triggers.Trigger;
 import hudson.triggers.TriggerDescriptor;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-public class TriggersExclusion extends HardCodedExclusion<AbstractProject> {
+public class TriggersExclusion extends AbstractExclusion<AbstractProject> {
 
     public static final String ID = "build-triggers";
-    private Map<TriggerDescriptor, Trigger> oldTriggers;
+    private static final String DESCRIPTION = "Retain local Build Triggers";
+    ;
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local Build Triggers";
+    public TriggersExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
@@ -29,17 +24,20 @@ public class TriggersExclusion extends HardCodedExclusion<AbstractProject> {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        oldTriggers = implementationProject.getTriggers();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.getTriggers());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        Map<TriggerDescriptor, Trigger> oldTriggers = context.remember();
         fixBuildTriggers(implementationProject, oldTriggers);
     }
 
     private static void fixBuildTriggers(AbstractProject implementationProject, Map<TriggerDescriptor, Trigger> oldTriggers) {
-        List<Trigger<?>> triggersToReplace = EzReflectionUtils.getFieldValue(AbstractProject.class, implementationProject, "triggers");
+        List<Trigger<?>> triggersToReplace = getTriggers(implementationProject);
         if (triggersToReplace == null) {
             throw new NullPointerException("triggersToReplace");
         }
@@ -52,6 +50,20 @@ public class TriggersExclusion extends HardCodedExclusion<AbstractProject> {
                     triggersToReplace.add(trigger);
                 }
             }
+        }
+    }
+
+    private static List<Trigger<?>> getTriggers(AbstractProject implementationProject) {
+        try {
+            Field triggers = AbstractProject.class.getDeclaredField("triggers");
+            triggers.setAccessible(true);
+            Object result = triggers.get(implementationProject);
+            //noinspection unchecked
+            return (List<Trigger<?>>) result;
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
     }
 }

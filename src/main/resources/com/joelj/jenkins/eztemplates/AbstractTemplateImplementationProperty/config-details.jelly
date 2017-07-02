@@ -30,7 +30,7 @@
             <j:when test="${e.disabledText != null}">
               <f:entry title="${e.id}">
                 <!-- workaround for a disabled f:checkbox -->
-                <input type="checkbox" disabled="disabled" />
+                <input type="checkbox" disabled="disabled" checked="${selections.contains(e.id)?'checked':null}"/>
                 ${e.description}
               </f:entry>
             </j:when>

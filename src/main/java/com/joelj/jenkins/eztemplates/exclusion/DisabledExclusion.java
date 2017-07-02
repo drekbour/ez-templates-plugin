@@ -3,19 +3,13 @@ package com.joelj.jenkins.eztemplates.exclusion;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import hudson.model.AbstractProject;
 
-public class DisabledExclusion extends HardCodedExclusion<AbstractProject> {
+public class DisabledExclusion extends AbstractExclusion<AbstractProject> {
 
     public static final String ID = "disabled";
-    private boolean disabled;
+    private static final String DESCRIPTION = "Retain local disabled setting";
 
-    @Override
-    public String getId() {
-        return ID;
-    }
-
-    @Override
-    public String getDescription() {
-        return "Retain local disabled setting";
+    public DisabledExclusion() {
+        super(ID, DESCRIPTION);
     }
 
     @Override
@@ -24,12 +18,15 @@ public class DisabledExclusion extends HardCodedExclusion<AbstractProject> {
     }
 
     @Override
-    public void preClone(AbstractProject implementationProject) {
-        disabled = implementationProject.isDisabled();
+    public void preClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        context.record(implementationProject.isDisabled());
     }
 
     @Override
-    public void postClone(AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject implementationProject) {
+        if (!context.isSelected()) return;
+        Boolean disabled = context.remember();
         EzReflectionUtils.setFieldValue(AbstractProject.class, implementationProject, "disabled", disabled);
     }
 
