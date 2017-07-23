@@ -1,6 +1,7 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
@@ -17,29 +18,19 @@ import static com.google.common.base.Predicates.in;
 
 public class ExclusionUtil {
 
-    private static final Function<Exclusion, Exclusion> CLONER = new Function<Exclusion, Exclusion>() {
-        @Override
-        public Exclusion apply(@Nonnull Exclusion exclusion) {
-            try {
-                return exclusion.clone();
-            } catch (CloneNotSupportedException e) {
-                throw Throwables.propagate(e);
-            }
-        }
-    };
-
     /**
-     * Filter exclusions
+     * {@link Exclusion}s currently enabled in Jenkins.
      *
-     * @param allExclusions  available exclusions
-     * @param exclusionNames selected exclusions
-     * @return Exclusions relevant to the given implementation
+     * @return Never null
      */
-    public static Collection<Exclusion> configuredExclusions(Map<String, Exclusion> allExclusions, List<String> exclusionNames) {
-        return Lists.newArrayList(Collections2.transform(
-                Maps.filterKeys(allExclusions, in(exclusionNames)).values(),
-                CLONER
-        ));
+    public static Collection<Exclusion> enabledExclusions(Map<String, Exclusion> all) {
+        // TODO Stop ez-templates being so special!
+        return Collections2.filter(all.values(), new Predicate<Exclusion>() {
+            @Override
+            public boolean apply(@Nonnull Exclusion input) {
+                return EzTemplatesExclusion.ID.equals(input.getId()) || input.getDisabledText() == null;
+            }
+        });
     }
 
     @SuppressFBWarnings

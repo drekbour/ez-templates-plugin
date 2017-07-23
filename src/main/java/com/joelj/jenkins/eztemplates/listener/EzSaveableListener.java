@@ -7,7 +7,7 @@ import hudson.model.JobProperty;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
 
-import static com.joelj.jenkins.eztemplates.utils.ProjectUtils.getProperty;
+import static com.joelj.jenkins.eztemplates.utils.JobUtils.getProperty;
 
 public abstract class EzSaveableListener<J extends JobProperty> extends SaveableListener {
 

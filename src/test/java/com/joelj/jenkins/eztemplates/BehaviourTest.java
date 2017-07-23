@@ -77,8 +77,7 @@ public class BehaviourTest {
         FreeStyleProject template2 = template("beta-template");
         template2.setDisplayName("Beta Template");
         // When:
-        TemplateImplementationProperty.TemplateImplementationPropertyDescriptor implDescriptor = new TemplateImplementationProperty.TemplateImplementationPropertyDescriptor();
-        ListBoxModel knownTemplates = new TemplateImplementationProperty.DescriptorImpl().doFillTemplateJobNameItems();
+        ListBoxModel knownTemplates = new TemplateImplementationProperty.TemplateImplementationPropertyDescriptor().doFillTemplateJobNameItems();
         // Then:
         assertThat(knownTemplates, contains(
                 both(hasField("name", "No template selected")).and(hasField("value", null)),

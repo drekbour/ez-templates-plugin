@@ -1,12 +1,14 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
+import hudson.model.Job;
+
 import java.util.logging.Logger;
 
 /**
  * It is expected that all {@link Exclusion}s extend this. Implementations should use the inherited logger for any
  * messages!
  */
-public abstract class AbstractExclusion implements Exclusion {
+public abstract class AbstractExclusion<J extends Job> implements Exclusion<J> {
 
     protected static final Logger LOG = Logger.getLogger("ez-templates");
 
@@ -36,7 +38,7 @@ public abstract class AbstractExclusion implements Exclusion {
      */
     @Override
     public String getDisabledText() {
-        return Exclusions.checkPlugin(getId());
+        return ExclusionUtil.checkPlugin(getId());
     }
 
     @Override

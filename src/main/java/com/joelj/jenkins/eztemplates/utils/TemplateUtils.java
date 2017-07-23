@@ -7,6 +7,7 @@ import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.ExclusionUtil;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
 import com.joelj.jenkins.eztemplates.listener.EzTemplateChange;
+import com.joelj.jenkins.eztemplates.listener.PropertyListener;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.BulkChange;
 import hudson.model.Item;
@@ -85,15 +86,15 @@ public class TemplateUtils {
 
             LOG.info(String.format("Implementation [%s] syncing with [%s].", implementationProject.getFullDisplayName(), property.getTemplateJobName()));
 
-        Job templateProject = property.findTemplate();
-        if (templateProject == null) {
-            // If the template can't be found, then it's probably a bug
-            throw new IllegalStateException(String.format("Cannot find template [%s] used by implementation [%s]", property.getTemplateJobName(), implementationProject.getFullDisplayName()));
-        }
+            Job templateProject = property.findTemplate();
+            if (templateProject == null) {
+                // If the template can't be found, then it's probably a bug
+                throw new IllegalStateException(String.format("Cannot find template [%s] used by implementation [%s]", property.getTemplateJobName(), implementationProject.getFullDisplayName()));
+            }
 
             EzContext context = new EzContext(property.getExclusions());
-            Collection<Exclusion> configuredExclusions = ExclusionUtil.configuredExclusions(property.exclusionDefinitions().getAll(), property.getExclusions());
-            applyTemplate(implementationProject, templateProject, context, Exclusions.enabledExceptions());
+            Collection<Exclusion> enabledExclusions = ExclusionUtil.enabledExclusions(property.exclusionDefinitions().getAll());
+            applyTemplate(implementationProject, templateProject, context, enabledExclusions);
         } finally {
             change.commit();
         }
@@ -154,7 +155,7 @@ public class TemplateUtils {
      * @return null if this is not a template implementation project
      */
     public static TemplateImplementationProperty getTemplateImplementationProperty(Item item) {
-        return ProjectUtils.getProperty(item, TemplateImplementationProperty.class);
+        return JobUtils.getProperty(item, TemplateImplementationProperty.class);
     }
 
 }

@@ -1,5 +1,6 @@
 package com.joelj.jenkins.eztemplates.listener;
 
+import com.joelj.jenkins.eztemplates.AbstractTemplateImplementationProperty;
 import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Extension;

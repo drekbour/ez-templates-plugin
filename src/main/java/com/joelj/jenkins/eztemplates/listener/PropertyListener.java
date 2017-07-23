@@ -6,7 +6,7 @@ import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.listeners.ItemListener;
 
-import static com.joelj.jenkins.eztemplates.utils.ProjectUtils.getProperty;
+import static com.joelj.jenkins.eztemplates.utils.JobUtils.getProperty;
 
 
 /**

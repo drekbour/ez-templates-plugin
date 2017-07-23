@@ -10,14 +10,14 @@ import hudson.plugins.promoted_builds.PromotionProcess;
 import java.io.FileInputStream;
 import java.io.IOException;
 
-import static com.joelj.jenkins.eztemplates.utils.ProjectUtils.getProperty;
+import static com.joelj.jenkins.eztemplates.utils.JobUtils.getProperty;
 
 
 /**
  * Quirky {@link Exclusion} which only needs to take action if the user chooses NOT to retain local
  * promotions.
  */
-public class PromotedBuildsExclusion extends JobPropertyExclusion {
+public class PromotedBuildsExclusion extends JobPropertyExclusion<AbstractProject> {
 
     public static final String ID = "promoted-builds";
     private static final String DESCRIPTION = "Retain local build promotions";

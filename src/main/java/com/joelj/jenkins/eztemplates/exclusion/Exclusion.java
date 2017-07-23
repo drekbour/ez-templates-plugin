@@ -1,12 +1,12 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 /**
  * A template cloning exclusion (usually meaning "retain something on the implementation"). It is expected all usages
  * extend AbstractExclusion.
  */
-public interface Exclusion {
+public interface Exclusion<J extends Job> {
 
     /**
      * ez-templates id for this {@link Exclusion}. Generally expected to be a plugin's id.
@@ -33,7 +33,7 @@ public interface Exclusion {
      * @param context               Templating execution, {@link Exclusion}s must check if they are selected in this execution!
      * @param implementationProject The child project before and any processing.
      */
-    void preClone(EzContext context, AbstractProject implementationProject);
+    void preClone(EzContext context, J implementationProject);
 
     /**
      * Restore content we kept - usually via reflection to prevent infinite save recursion.
@@ -45,6 +45,6 @@ public interface Exclusion {
      *                              view of the Job currently looks exactly like the template.
      * @see com.joelj.jenkins.eztemplates.utils.EzReflectionUtils
      */
-    void postClone(EzContext context, AbstractProject implementationProject);
+    void postClone(EzContext context, J implementationProject);
 
 }

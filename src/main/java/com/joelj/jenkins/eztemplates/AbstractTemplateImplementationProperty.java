@@ -41,7 +41,7 @@ public abstract class AbstractTemplateImplementationProperty<J extends Job<?, ?>
         this.templateJobName = templateJobName;
     }
 
-    public Job findTemplate() {
+    public J findTemplate() {
         return JobUtils.findJob(getTemplateJobName());
     }
 

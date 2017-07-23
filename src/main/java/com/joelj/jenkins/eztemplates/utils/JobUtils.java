@@ -41,12 +41,13 @@ public class JobUtils {
      * @param fullName full name of the job
      * @return job identified by the full name or {@code null} if not found
      */
+    @SuppressWarnings("unchecked")
     @SuppressFBWarnings
-    public static Job findJob(String fullName) {
+    public static <J extends Job> J findJob(String fullName) {
         List<Job> projects = Jenkins.getInstance().getAllItems(Job.class);
         for (Job project : projects) {
             if (fullName.equals(project.getFullName())) {
-                return project;
+                return (J)project;
             }
         }
         return null;
@@ -115,6 +116,21 @@ public class JobUtils {
         } finally {
             out.abort(); // don't leave anything behind
         }
+    }
+
+    /**
+     * @param item         A job of some kind
+     * @param propertyType The property to look for
+     * @return null if this property isn't found
+     */
+    @SuppressWarnings("unchecked")
+    public static <J extends JobProperty> J getProperty(Object item, Class<J> propertyType) {
+        // TODO Does this method already exist somewhere in Jenkins?
+        // TODO bad home for this method
+        if (item instanceof Job) {
+            return (J) ((Job) item).getProperty(propertyType); // Why do we need to cast to J?
+        }
+        return null;
     }
 
     private static final String ABSTRACT_PROJECT_CLASS = "hudson.model.AbstractProject";
