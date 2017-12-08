@@ -43,21 +43,24 @@ public class BehaviourTest {
 
     private FreeStyleProject impl(String name, String template) throws Exception {
         FreeStyleProject impl = project(name);
+        return assignTemplate(template, impl);
+    }
+
+    private static FreeStyleProject assignTemplate(String template, FreeStyleProject impl) throws java.io.IOException {
         BulkChange change = new BulkChange(impl);
         impl.addProperty(TemplateImplementationProperty.newImplementation(template));
         change.abort(); // Leaves XML unchanged, doesn't save()
         return impl;
     }
 
-
-    private void addTriggerWithoutTemplating(AbstractProject project) throws Exception {
+    private static void addTriggerWithoutTemplating(AbstractProject project) throws Exception {
         BulkChange change = new BulkChange(project);
         project.addTrigger(new TimerTrigger("* H * * *"));
         change.abort(); // Leaves XML unchanged, doesn't save()
         assertThat(project.getTriggers().isEmpty(), is(false));
     }
 
-    private void save(Item project) {
+    private static void save(Item project) {
         if (VersionEvaluator.jobSaveUsesBulkchange()) {
             SaveableListener.fireOnChange(project, Items.getConfigFile(project));
         } else {
@@ -122,8 +125,8 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(impl);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(true));
@@ -134,8 +137,8 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(template);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(true));
@@ -147,8 +150,8 @@ public class BehaviourTest {
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
         FreeStyleProject other = project("beta");
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(other);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(false));
@@ -158,8 +161,8 @@ public class BehaviourTest {
     public void saving_impl_with_no_template_works() throws Exception {
         // Given:
         FreeStyleProject impl = impl("alpha-1", "null"); // FIXME this really should be tested via web submission
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(impl);
         // Then:
         assertThat(impl.getTriggers().size(), is(1));
