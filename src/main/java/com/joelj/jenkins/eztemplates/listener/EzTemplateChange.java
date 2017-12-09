@@ -1,24 +1,33 @@
 package com.joelj.jenkins.eztemplates.listener;
 
 import hudson.BulkChange;
+import hudson.model.Job;
 import hudson.model.Saveable;
 
-import java.io.IOException;
-
 /**
- * Track implementations being updated so we don't re-trigger templating.
+ * Track {@link Job}s being updated so we don't re-trigger templating. Each record has a context (template or child) so
+ * that a given {@link Job} may be both a child and a temnplate itself, enabling cascading templating.
+ * <p/>
  * Cut'n'paste from BulkChange 1.642.3 for simplicity.
  */
 public class EzTemplateChange {
     private final Saveable saveable;
+    private final Object context;
     public final Exception allocator;
     private final EzTemplateChange parent;
 
     private boolean completed;
 
-    public EzTemplateChange(Saveable saveable) {
+    /**
+     * Record that a given {@link Job} is being templated
+     *
+     * @param saveable The {@link Job} to be tracked.
+     * @param context  THe context the object is tracked under.
+     */
+    public EzTemplateChange(Saveable saveable, Object context) {
         this.parent = current();
         this.saveable = saveable;
+        this.context = context;
         // rememeber who allocated this object in case
         // someone forgot to call save() at the end.
         allocator = new Exception();
@@ -30,7 +39,7 @@ public class EzTemplateChange {
     /**
      * Saves the accumulated changes.
      */
-    public void commit() throws IOException {
+    public void commit() {
         if (completed) return;
         completed = true;
 
@@ -81,9 +90,9 @@ public class EzTemplateChange {
      * The expected usage is from the {@link Saveable#save()} implementation to check
      * if the actual persistence should happen now or not.
      */
-    public static boolean contains(Saveable s) {
+    public static boolean contains(Saveable s, Object context) {
         for (EzTemplateChange b = current(); b != null; b = b.parent)
-            if (b.saveable == s || b.saveable == ALL)
+            if (b.context == context && (b.saveable == s || b.saveable == ALL))
                 return true;
         return false;
     }

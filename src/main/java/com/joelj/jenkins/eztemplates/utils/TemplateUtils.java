@@ -36,7 +36,7 @@ public class TemplateUtils {
     public static void handleTemplateDeleted(AbstractProject templateProject, TemplateProperty property) throws IOException {
         LOG.info(String.format("Template [%s] was deleted.", templateProject.getFullDisplayName()));
         for (AbstractProject impl : property.getImplementations()) {
-            EzTemplateChange change = new EzTemplateChange(impl);
+            EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
                 impl.removeProperty(TemplateImplementationProperty.class);
@@ -52,7 +52,7 @@ public class TemplateUtils {
         String detail = implementations.isEmpty() ? "No implementations to sync." : " Syncing implementations.";
         LOG.info(String.format("Template [%s] was renamed.%s", templateProject.getFullDisplayName(), detail));
         for (AbstractProject impl : implementations) {
-            EzTemplateChange change = new EzTemplateChange(impl);
+            EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
                 TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
@@ -75,7 +75,7 @@ public class TemplateUtils {
     }
 
     public static void handleTemplateImplementationSaved(AbstractProject implementationProject, TemplateImplementationProperty property) throws IOException {
-        EzTemplateChange change = new EzTemplateChange(implementationProject);
+        EzTemplateChange change = new EzTemplateChange(implementationProject, TemplateImplementationProperty.class);
         try {
             if (property.getTemplateJobName() == null) {
                 LOG.warning(String.format("Implementation [%s] has no template selected.", implementationProject.getFullDisplayName()));

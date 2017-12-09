@@ -28,7 +28,7 @@ public class EzSaveableListenerTest {
     private EzSaveableListener<ParametersDefinitionProperty> listener;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         given(job.getProperty(ParametersDefinitionProperty.class)).willReturn(property);
     }
 
@@ -49,7 +49,7 @@ public class EzSaveableListenerTest {
         jenkinsVersion.set("2.32.2");
         listener = newListener();
         // When:
-        EzTemplateChange change = new EzTemplateChange(job);
+        EzTemplateChange change = new EzTemplateChange(job, ParametersDefinitionProperty.class);
         try {
             listener.onChange(job, xmlFile);
         } finally {
@@ -60,7 +60,7 @@ public class EzSaveableListenerTest {
     }
 
     @Test
-    public void filtersChangeOnOlderJenkins() throws Exception {
+    public void filtersChangeOnOlderJenkins() {
         // Given:
         jenkinsVersion.set("2.32.1");
         listener = newListener();
@@ -71,7 +71,7 @@ public class EzSaveableListenerTest {
     }
 
     @Test
-    public void filtersChangeIfPropertyIsMissing() throws Exception {
+    public void filtersChangeIfPropertyIsMissing() {
         // Given:
         jenkinsVersion.set("2.32.2");
         listener = newListener();

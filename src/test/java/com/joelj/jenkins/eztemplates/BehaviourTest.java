@@ -18,6 +18,7 @@ import static com.joelj.jenkins.eztemplates.EzMatchers.*;
 import static com.joelj.jenkins.eztemplates.FieldMatcher.hasField;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assume.assumeThat;
 
 /**
  * Tests of the job and property behaviours.
@@ -34,6 +35,12 @@ public class BehaviourTest {
     private FreeStyleProject template(String name) throws Exception {
         FreeStyleProject template = project(name);
         template.addProperty(new TemplateProperty());
+        return template;
+    }
+
+    private FreeStyleProject template(String name, String parentTemplate) throws Exception {
+        FreeStyleProject template = template(name);
+        assignTemplate(parentTemplate, template);
         return template;
     }
 
@@ -54,6 +61,7 @@ public class BehaviourTest {
     }
 
     private static void addTriggerWithoutTemplating(AbstractProject project) throws Exception {
+        // This makes a change to a child project that will be overwritten by template merge (with default exclusions)
         BulkChange change = new BulkChange(project);
         project.addTrigger(new TimerTrigger("* H * * *"));
         change.abort(); // Leaves XML unchanged, doesn't save()
@@ -165,7 +173,7 @@ public class BehaviourTest {
         addTriggerWithoutTemplating(impl);
         save(impl);
         // Then:
-        assertThat(impl.getTriggers().size(), is(1));
+        assertThat(impl.getTriggers().isEmpty(), is(false));
     }
 
     @Test
@@ -224,5 +232,21 @@ public class BehaviourTest {
         // Then:
         assertThat(impl, hasTemplate("alpha-template"));
     }
+
+    @Test
+    public void saving_propagates_across_nested_templates() throws Exception {
+        assumeThat("Only works on >=2.32.2", VersionEvaluator.jobSaveUsesBulkchange(), is(true));
+        // Given:
+        FreeStyleProject grandparent = template("food");
+        FreeStyleProject parent = template("fruit", "food");
+        FreeStyleProject child = impl("apple", "fruit");
+        // When:
+        addTriggerWithoutTemplating(child);
+        save(grandparent);
+        Thread.sleep(10000); // FIXME
+        // Then:
+        assertThat(child.getTriggers().isEmpty(), is(true));
+    }
+
 
 }

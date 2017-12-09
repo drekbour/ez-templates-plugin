@@ -22,7 +22,7 @@ public abstract class EzSaveableListener<J extends JobProperty> extends Saveable
 
     @Override
     public final void onChange(Saveable o, XmlFile file) {
-        if (!enabled || EzTemplateChange.contains(o)) {
+        if (!enabled || EzTemplateChange.contains(o, propertyType)) {
             return;
         }
         J property = getProperty(o, propertyType);

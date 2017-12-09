@@ -24,7 +24,7 @@ public class PropertyListenerTest {
     private PropertyListener<ParametersDefinitionProperty> listener;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         given(job.getProperty(ParametersDefinitionProperty.class)).willReturn(property);
     }
 
@@ -45,7 +45,7 @@ public class PropertyListenerTest {
         jenkinsVersion.set("2.32.1");
         listener = newListener();
         // When:
-        EzTemplateChange change = new EzTemplateChange(job);
+        EzTemplateChange change = new EzTemplateChange(job, ParametersDefinitionProperty.class);
         try {
             listener.onUpdated(job);
         } finally {
@@ -56,7 +56,7 @@ public class PropertyListenerTest {
     }
 
     @Test
-    public void filtersUpdatedOnNewerJenkins() throws Exception {
+    public void filtersUpdatedOnNewerJenkins() {
         // Given:
         jenkinsVersion.set("2.32.2");
         listener = newListener();
@@ -67,7 +67,7 @@ public class PropertyListenerTest {
     }
 
     @Test
-    public void filtersUpdatedIfPropertyIsMissing() throws Exception {
+    public void filtersUpdatedIfPropertyIsMissing() {
         // Given:
         jenkinsVersion.set("2.32.1");
         listener = newListener();

@@ -28,7 +28,7 @@ public class VersionEvaluatorTest {
             "2.38, true"
     })
     @TestCaseName("Does Jenkins v{0} use BulkChange ({1})")
-    public void doesJenkinsUseBulkSave(String version, boolean expected) throws Exception {
+    public void doesJenkinsUseBulkSave(String version, boolean expected) {
         // Given:
         jenkinsVersion.set(version);
         // When:
