@@ -11,12 +11,11 @@ import hudson.BulkChange;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
 
-import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -136,15 +135,10 @@ public class TemplateUtils {
 
     @SuppressFBWarnings
     private static AbstractProject cloneTemplate(AbstractProject implementationProject, AbstractProject templateProject) throws IOException {
-        File templateConfigFile = templateProject.getConfigFile().getFile();
-        BufferedReader reader = new BufferedReader(new FileReader(templateConfigFile));
-        try {
-            Source source = new StreamSource(reader);
-            implementationProject = ProjectUtils.updateProjectWithXmlSource(implementationProject, source);
-        } finally {
-            reader.close();
+        Path templateConfigFile = templateProject.getConfigFile().getFile().toPath();
+        try (InputStream is = Files.newInputStream(templateConfigFile)) {
+            return ProjectUtils.updateProjectWithXmlSource(implementationProject, new StreamSource(is));
         }
-        return implementationProject;
     }
 
     /**
