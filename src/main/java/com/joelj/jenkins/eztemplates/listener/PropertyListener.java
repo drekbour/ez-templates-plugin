@@ -125,7 +125,7 @@ public abstract class PropertyListener<J extends JobProperty> extends ItemListen
             try {
                 onUpdatedProperty((Job) item, property);
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException("EZ Templates failed", e);
             }
         }
     }

@@ -12,6 +12,10 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import java.io.File;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasToString;
+import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 
@@ -44,7 +48,7 @@ public class EzSaveableListenerTest {
     }
 
     @Test
-    public void filtersChangeIfCurrentlyBeingTemplated() throws Exception {
+    public void filtersChangeIfCurrentlyBeingTemplated() {
         // Given:
         jenkinsVersion.set("2.32.2");
         listener = newListener();
@@ -82,8 +86,33 @@ public class EzSaveableListenerTest {
         verifyZeroInteractions(listener);
     }
 
+    @Test
+    public void rethrowsExceptions() {
+        // Given:
+        try {
+            jenkinsVersion.set("2.32.2");
+            listener = brokenListener();
+            // When:
+            listener.onChange(job, xmlFile);
+            fail();
+        } catch (Exception e) {
+            // Then:
+            assertThat(e, hasToString(containsString("EZ Templates failed")));
+        }
+    }
+
     private EzSaveableListener<ParametersDefinitionProperty> newListener() {
         return spy(new EzSaveableListener<ParametersDefinitionProperty>(ParametersDefinitionProperty.class) {
         });
     }
+
+    private EzSaveableListener<ParametersDefinitionProperty> brokenListener() {
+        return spy(new EzSaveableListener<ParametersDefinitionProperty>(ParametersDefinitionProperty.class) {
+            @Override
+            public void onChangedProperty(AbstractProject job, XmlFile file, ParametersDefinitionProperty property) throws Exception {
+                throw new Exception();
+            }
+        });
+    }
+
 }

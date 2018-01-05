@@ -1,6 +1,5 @@
 package com.joelj.jenkins.eztemplates.listener;
 
-import com.google.common.base.Throwables;
 import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.model.JobProperty;
@@ -30,7 +29,7 @@ public abstract class EzSaveableListener<J extends JobProperty> extends Saveable
             try {
                 onChangedProperty((AbstractProject) o, file, property);
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException("EZ Templates failed", e);
             }
         }
     }

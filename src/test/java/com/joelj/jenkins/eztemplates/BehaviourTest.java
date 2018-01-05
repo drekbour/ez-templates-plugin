@@ -8,6 +8,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.triggers.TimerTrigger;
 import hudson.util.ListBoxModel;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -233,6 +234,8 @@ public class BehaviourTest {
         assertThat(impl, hasTemplate("alpha-template"));
     }
 
+    // Templating
+
     @Test
     public void saving_propagates_across_nested_templates() throws Exception {
         assumeThat("Only works on >=2.32.2", VersionEvaluator.jobSaveUsesBulkchange(), is(true));
@@ -248,5 +251,30 @@ public class BehaviourTest {
         assertThat(child.getTriggers().isEmpty(), is(true));
     }
 
+    @Test
+    @Ignore("Cannot test until we have extension point to leverage")
+    public void aborting_pre_clone_leaves_impl_untouched() throws Exception {
+        FreeStyleProject template = template("alpha-template");
+        template.addTrigger(new TimerTrigger("* H * * *"));
+        FreeStyleProject impl = impl("alpha-1", template);
+        // TODO inject an Exclusion which fails in preClone
+        // When:
+        template.setDescription("desc");
+        // Then:
+        assertThat(impl.getTriggers().isEmpty(), is(false));
+    }
+
+    @Test
+    @Ignore("Cannot test until we have extension point to leverage")
+    public void aborting_post_clone_leaves_impl_untouched() throws Exception {
+        FreeStyleProject template = template("alpha-template");
+        template.addTrigger(new TimerTrigger("* H * * *"));
+        FreeStyleProject impl = impl("alpha-1", template);
+        // TODO inject an Exclusion which fails in postClone
+        // When:
+        template.setDescription("desc");
+        // Then:
+        assertThat(impl.getTriggers().isEmpty(), is(false));
+    }
 
 }

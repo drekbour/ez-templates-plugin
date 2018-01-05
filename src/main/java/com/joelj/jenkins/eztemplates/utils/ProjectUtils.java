@@ -17,7 +17,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -59,13 +63,19 @@ public class ProjectUtils {
         return null;
     }
 
+    public static void updateProjectWithXmlSource(AbstractItem project, Path source) throws IOException {
+        try (InputStream is = Files.newInputStream(source)) {
+            ProjectUtils.updateByXml(project, new StreamSource(is));
+        }
+    }
+
     /**
      * Copied from 1.580.3 {@link AbstractItem#updateByXml(javax.xml.transform.Source)}, removing the save event and
-     * returning the project after the update.
+     * returning the project after the update. Note - newer version uses rebuildDependencyGraphAsync which may be a problem.
      */
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings
-    public static AbstractProject updateProjectWithXmlSource(final AbstractProject project, Source source) throws IOException {
+    private static void updateByXml(final AbstractItem project, Source source) throws IOException {
 
         XmlFile configXmlFile = project.getConfigFile();
         AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
@@ -100,7 +110,8 @@ public class ProjectUtils {
 
             // if everything went well, commit this new version
             out.commit();
-            return findProject(project.getFullName());
+            //SaveableListener.fireOnChange(this, getConfigFile());
+
         } finally {
             out.abort(); // don't leave anything behind
         }
