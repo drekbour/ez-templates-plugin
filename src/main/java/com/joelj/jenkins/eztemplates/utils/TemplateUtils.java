@@ -6,21 +6,15 @@ import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.ExclusionUtil;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
+import com.joelj.jenkins.eztemplates.listener.EzBulkChange;
 import com.joelj.jenkins.eztemplates.listener.EzTemplateChange;
 import com.joelj.jenkins.eztemplates.listener.PropertyListener;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
-import hudson.BulkChange;
 import hudson.model.Item;
 import hudson.model.Job;
 
-import javax.xml.transform.Source;
-import javax.xml.transform.stream.StreamSource;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class TemplateUtils {
@@ -38,7 +32,7 @@ public class TemplateUtils {
     public static void handleTemplateDeleted(Job templateProject, TemplateProperty property) throws IOException {
         LOG.info(String.format("Template [%s] was deleted.", templateProject.getFullDisplayName()));
         for (Job impl : property.getImplementations()) {
-            EzTemplateChange change = new EzTemplateChange(impl);
+            EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
                 impl.removeProperty(TemplateImplementationProperty.class);
@@ -54,7 +48,7 @@ public class TemplateUtils {
         String detail = implementations.isEmpty() ? "No implementations to sync." : " Syncing implementations.";
         LOG.info(String.format("Template [%s] was renamed.%s", templateProject.getFullDisplayName(), detail));
         for (Job impl : implementations) {
-            EzTemplateChange change = new EzTemplateChange(impl);
+            EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
                 TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
@@ -77,7 +71,7 @@ public class TemplateUtils {
     }
 
     public static void handleTemplateImplementationSaved(Job implementationProject, AbstractTemplateImplementationProperty<?> property) throws IOException {
-        EzTemplateChange change = new EzTemplateChange(implementationProject);
+        EzTemplateChange change = new EzTemplateChange(implementationProject, TemplateImplementationProperty.class);
         try {
             if (property.getTemplateJobName() == null) {
                 LOG.warning(String.format("Implementation [%s] has no template selected.", implementationProject.getFullDisplayName()));
@@ -95,59 +89,48 @@ public class TemplateUtils {
             EzContext context = new EzContext(property.getExclusions());
             Collection<Exclusion> enabledExclusions = ExclusionUtil.enabledExclusions(property.exclusionDefinitions().getAll());
             applyTemplate(implementationProject, templateProject, context, enabledExclusions);
+        } catch (RuntimeException e) {
+            change.abort();
+            throw e;
         } finally {
             change.commit();
         }
     }
 
     private static void applyTemplate(Job implementationProject, Job templateProject, EzContext context, Collection<Exclusion> exclusions) throws IOException {
-        // Capture values we want to keep
+        // 1. Capture values we want to keep
         for (Exclusion exclusion : exclusions) {
             context.setCurrentExclusionId(exclusion.getId());
-            try {
-                exclusion.preClone(context, implementationProject);
-            } catch (RuntimeException e) {
-                LOG.log(Level.WARNING, String.format("Templating failed analyse %s", exclusion), e);
-                throw e; // Fail immediately on any pre-clone issue
-            }
+            exclusion.preClone(context, implementationProject);
         }
 
+        // 2. Load template's XML directly over the impl (in-memory, without affecting impl XML)
         implementationProject = cloneTemplate(implementationProject, templateProject);
 
-        // BulkChange target must be the post-cloned instance of the impl
-        BulkChange bulkChange = new BulkChange(implementationProject);
+        // 3. Restore values we kept
+        // BulkChange makes sure save events are not generated for each postClone change made
+        EzBulkChange bulkChange = new EzBulkChange(implementationProject);
         try {
-            // Restore values we kept
-            boolean failure = false;
             for (Exclusion exclusion : exclusions) {
                 context.setCurrentExclusionId(exclusion.getId());
-                try {
-                    exclusion.postClone(context, implementationProject);
-                } catch (RuntimeException e) {
-                    LOG.log(Level.WARNING, String.format("Templating failed apply %s", exclusion), e);
-                    // since we've already cloned the template to the filesystem, attempt to apply all exclusions
-                    failure = true;
-                }
+                exclusion.postClone(context, implementationProject);
             }
-            if (failure) {
-                throw new RuntimeException("Templating failed, see logs");
-            }
+        } catch (RuntimeException e) {
+            // Reset impl in-memory state from its XML
+            LOG.severe(String.format("Rolling back [%s].", implementationProject.getFullDisplayName()));
+            bulkChange.revert();
+            throw e;
         } finally {
-            bulkChange.commit(); // These changes have been made in memory so should be reflected on disk.
+            // 4. Save impl in-memory state to XML
+            // This may cascade (depth first) if the impl is also a template.
+            bulkChange.commit();
         }
     }
 
     @SuppressFBWarnings
     private static Job cloneTemplate(Job implementationProject, Job templateProject) throws IOException {
-        File templateConfigFile = templateProject.getConfigFile().getFile();
-        BufferedReader reader = new BufferedReader(new FileReader(templateConfigFile));
-        try {
-            Source source = new StreamSource(reader);
-            implementationProject = JobUtils.updateJobWithXmlSource(implementationProject, source);
-        } finally {
-            reader.close();
-        }
-        return implementationProject;
+        JobUtils.updateProjectWithXmlSource( implementationProject, templateProject.getConfigFile().getFile().toPath());
+        return JobUtils.findJob(implementationProject.getFullName()); // Must search again as the old instance is defunct
     }
 
     /**

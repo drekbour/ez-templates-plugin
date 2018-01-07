@@ -20,7 +20,7 @@ public class TemplateImplementationSaveableListener extends EzSaveableListener<A
 
     @Override
     public void onChangedProperty(AbstractProject job, XmlFile file, AbstractTemplateImplementationProperty property) throws Exception {
-        LOG.warning(String.format("Implementation [%s] saved", job.getFullDisplayName()));
+        LOG.fine(String.format("Implementation [%s] saved", job.getFullDisplayName()));
         TemplateUtils.handleTemplateImplementationSaved((AbstractProject) job, property);
     }
 }

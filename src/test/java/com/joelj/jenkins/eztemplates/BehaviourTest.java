@@ -9,6 +9,7 @@ import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.triggers.TimerTrigger;
 import hudson.util.ListBoxModel;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
@@ -19,6 +20,7 @@ import static com.joelj.jenkins.eztemplates.EzMatchers.*;
 import static com.joelj.jenkins.eztemplates.FieldMatcher.hasField;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assume.assumeThat;
 
 
 /**
@@ -39,27 +41,37 @@ public class BehaviourTest {
         return template;
     }
 
+    private FreeStyleProject template(String name, String parentTemplate) throws Exception {
+        FreeStyleProject template = template(name);
+        assignTemplate(parentTemplate, template);
+        return template;
+    }
+
     private FreeStyleProject impl(String name, AbstractProject template) throws Exception {
         return impl(name, template.getFullName());
     }
 
     private FreeStyleProject impl(String name, String template) throws Exception {
         FreeStyleProject impl = project(name);
+        return assignTemplate(template, impl);
+    }
+
+    private static FreeStyleProject assignTemplate(String template, FreeStyleProject impl) throws java.io.IOException {
         BulkChange change = new BulkChange(impl);
         impl.addProperty(TemplateImplementationProperty.newImplementation(template));
         change.abort(); // Leaves XML unchanged, doesn't save()
         return impl;
     }
 
-
-    private void addTriggerWithoutTemplating(AbstractProject project) throws Exception {
+    private static void addTriggerWithoutTemplating(AbstractProject project) throws Exception {
+        // This makes a change to a child project that will be overwritten by template merge (with default exclusions)
         BulkChange change = new BulkChange(project);
         project.addTrigger(new TimerTrigger("* H * * *"));
         change.abort(); // Leaves XML unchanged, doesn't save()
         assertThat(project.getTriggers().isEmpty(), is(false));
     }
 
-    private void save(Item project) {
+    private static void save(Item project) {
         if (VersionEvaluator.jobSaveUsesBulkchange()) {
             SaveableListener.fireOnChange(project, Items.getConfigFile(project));
         } else {
@@ -124,8 +136,8 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(impl);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(true));
@@ -136,8 +148,8 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(template);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(true));
@@ -149,8 +161,8 @@ public class BehaviourTest {
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
         FreeStyleProject other = project("beta");
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(other);
         // Then:
         assertThat(impl.getTriggers().isEmpty(), is(false));
@@ -160,11 +172,11 @@ public class BehaviourTest {
     public void saving_impl_with_no_template_works() throws Exception {
         // Given:
         FreeStyleProject impl = impl("alpha-1", "null"); // FIXME this really should be tested via web submission
-        addTriggerWithoutTemplating(impl);
         // When:
+        addTriggerWithoutTemplating(impl);
         save(impl);
         // Then:
-        assertThat(impl.getTriggers().size(), is(1));
+        assertThat(impl.getTriggers().isEmpty(), is(false));
     }
 
     @Test
@@ -222,6 +234,49 @@ public class BehaviourTest {
         FreeStyleProject impl = (FreeStyleProject) jenkins.jenkins.copy((TopLevelItem) template, "alpha-1");
         // Then:
         assertThat(impl, hasTemplate("alpha-template"));
+    }
+
+    // Templating
+
+    @Test
+    public void saving_propagates_across_nested_templates() throws Exception {
+        assumeThat("Only works on >=2.32.2", VersionEvaluator.jobSaveUsesBulkchange(), is(true));
+        // Given:
+        FreeStyleProject grandparent = template("food");
+        FreeStyleProject parent = template("fruit", "food");
+        FreeStyleProject child = impl("apple", "fruit");
+        // When:
+        addTriggerWithoutTemplating(child);
+        save(grandparent);
+        Thread.sleep(10000); // FIXME
+        // Then:
+        assertThat(child.getTriggers().isEmpty(), is(true));
+    }
+
+    @Test
+    @Ignore("Cannot test until we have extension point to leverage")
+    public void aborting_pre_clone_leaves_impl_untouched() throws Exception {
+        FreeStyleProject template = template("alpha-template");
+        template.addTrigger(new TimerTrigger("* H * * *"));
+        FreeStyleProject impl = impl("alpha-1", template);
+        // TODO inject an Exclusion which fails in preClone
+        // When:
+        template.setDescription("desc");
+        // Then:
+        assertThat(impl.getTriggers().isEmpty(), is(false));
+    }
+
+    @Test
+    @Ignore("Cannot test until we have extension point to leverage")
+    public void aborting_post_clone_leaves_impl_untouched() throws Exception {
+        FreeStyleProject template = template("alpha-template");
+        template.addTrigger(new TimerTrigger("* H * * *"));
+        FreeStyleProject impl = impl("alpha-1", template);
+        // TODO inject an Exclusion which fails in postClone
+        // When:
+        template.setDescription("desc");
+        // Then:
+        assertThat(impl.getTriggers().isEmpty(), is(false));
     }
 
 }

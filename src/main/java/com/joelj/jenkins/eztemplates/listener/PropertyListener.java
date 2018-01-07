@@ -117,7 +117,7 @@ public abstract class PropertyListener<J extends JobProperty> extends ItemListen
 
     @Override
     public final void onUpdated(Item item) {
-        if (!updateEnabled || EzTemplateChange.contains(item)) {
+        if (!updateEnabled || EzTemplateChange.contains(item, propertyType)) {
             return; // Ignore item listener updates if we trust the more general-purpose SaveableListener
         }
         J property = getProperty(item, propertyType);
@@ -125,7 +125,7 @@ public abstract class PropertyListener<J extends JobProperty> extends ItemListen
             try {
                 onUpdatedProperty((Job) item, property);
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException("EZ Templates failed", e);
             }
         }
     }

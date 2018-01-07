@@ -18,7 +18,11 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
+import javax.xml.transform.stream.StreamSource;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 
@@ -53,32 +57,27 @@ public class JobUtils {
         return null;
     }
 
-    /**
-     * Silently saves the job without triggering any save events.
-     * Use this method to save a job from within an Update event handler.
-     *
-     * @param job project to be saved
-     * @throws IOException if unable to save the project
-     */
-    public static void silentSave(Job job) throws IOException {
-        job.getConfigFile().write(job);
+    public static void updateProjectWithXmlSource(AbstractItem project, Path source) throws IOException {
+        try (InputStream is = Files.newInputStream(source)) {
+            updateByXml(project, new StreamSource(is));
+        }
     }
 
     /**
      * Copied from 1.580.3 {@link AbstractItem#updateByXml(javax.xml.transform.Source)}, removing the save event and
-     * returning the job after the update.
+     * returning the job after the update. Note - newer version uses rebuildDependencyGraphAsync which may be a problem.
      * FIXME update
      *
-     * @param job    job to persist
+     * @param project    job to persist
      * @param source configuration to be persisted
      * @return project as returned by {@link #findJob(String)}
      * @throws IOException if unable to persist
      */
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings
-    public static Job updateJobWithXmlSource(final Job job, Source source) throws IOException {
+    private static void updateByXml(final AbstractItem project, Source source) throws IOException {
 
-        XmlFile configXmlFile = job.getConfigFile();
+        XmlFile configXmlFile = project.getConfigFile();
         AtomicFileWriter out = new AtomicFileWriter(configXmlFile.getFile());
         try {
             try {
@@ -95,16 +94,16 @@ public class JobUtils {
             }
 
             // try to reflect the changes by reloading
-            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(job);
-            if (o != job) {
+            Object o = new XmlFile(Items.XSTREAM, out.getTemporaryFile()).unmarshal(project);
+            if (o != project) {
                 // ensure that we've got the same job type. extending this code to support updating
                 // to different job type requires destroying & creating a new job type
-                throw new IOException("Expecting " + job.getClass() + " but got " + o.getClass() + " instead");
+                throw new IOException("Expecting " + project.getClass() + " but got " + o.getClass() + " instead");
             }
             Items.whileUpdatingByXml(new NotReallyRoleSensitiveCallable<Void, IOException>() {
                 @Override
                 public Void call() throws IOException {
-                    job.onLoad(job.getParent(), job.getRootDir().getName());
+                    project.onLoad(project.getParent(), project.getRootDir().getName());
                     return null;
                 }
             });
@@ -112,7 +111,7 @@ public class JobUtils {
 
             // if everything went well, commit this new version
             out.commit();
-            return findJob(job.getFullName());
+            //SaveableListener.fireOnChange(this, getConfigFile());
         } finally {
             out.abort(); // don't leave anything behind
         }

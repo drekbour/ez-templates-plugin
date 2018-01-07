@@ -1,6 +1,5 @@
 package com.joelj.jenkins.eztemplates.listener;
 
-import com.google.common.base.Throwables;
 import hudson.XmlFile;
 import hudson.model.AbstractProject;
 import hudson.model.JobProperty;
@@ -22,7 +21,7 @@ public abstract class EzSaveableListener<J extends JobProperty> extends Saveable
 
     @Override
     public final void onChange(Saveable o, XmlFile file) {
-        if (!enabled || EzTemplateChange.contains(o)) {
+        if (!enabled || EzTemplateChange.contains(o, propertyType)) {
             return;
         }
         J property = getProperty(o, propertyType);
@@ -30,7 +29,7 @@ public abstract class EzSaveableListener<J extends JobProperty> extends Saveable
             try {
                 onChangedProperty((AbstractProject) o, file, property);
             } catch (Exception e) {
-                throw Throwables.propagate(e);
+                throw new RuntimeException("EZ Templates failed", e);
             }
         }
     }
