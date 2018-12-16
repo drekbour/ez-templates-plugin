@@ -11,8 +11,7 @@ import java.util.Map;
 public class TriggersExclusion extends AbstractExclusion<AbstractProject> {
 
     public static final String ID = "build-triggers";
-    private static final String DESCRIPTION = "Retain local Build Triggers";
-    ;
+    public static final String DESCRIPTION = "Retain local Build Triggers";
 
     public TriggersExclusion() {
         super(ID, DESCRIPTION);

@@ -1,17 +1,22 @@
 package com.joelj.jenkins.eztemplates.pipeline;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.joelj.jenkins.eztemplates.exclusion.*;
-import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
+import com.joelj.jenkins.eztemplates.exclusion.DescriptionExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
+import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
+import com.joelj.jenkins.eztemplates.exclusion.EzTemplatesExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.JobParametersExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.JobPropertyExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.MatrixAxisExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.OwnershipExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.TriggersExclusion;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-import static com.google.common.base.Predicates.in;
-import static com.google.common.base.Predicates.not;
+import static com.joelj.jenkins.eztemplates.exclusion.ExclusionUtil.index;
+import static com.joelj.jenkins.eztemplates.project.ProjectExclusions.GITHUB_ID;
+import static com.joelj.jenkins.eztemplates.project.ProjectExclusions.MATRIX_SECURITY_ID;
 
 public class PipelineExclusions implements Exclusions {
 
@@ -19,26 +24,17 @@ public class PipelineExclusions implements Exclusions {
     private static final List<String> DEFAULT;
 
     static {
-        // Construct as delta from (default) ProjectExclusions
-        ImmutableMap.Builder<String, Exclusion> builder = ImmutableMap.builder();
-        builder.putAll(
-                Maps.filterKeys(ProjectExclusions.ALL, not(in(Arrays.asList(
-                        // the label where the job is going to be run on is defined on the pipeline itself, we do nothing.
-                        AssignedLabelExclusion.ID,
-                        // SCM to poll is defined on the pipeline itself (in fact, you can have several SCMs to poll), so we do nothing.
-                        // See http://stackoverflow.com/a/31148178
-                        ScmExclusion.ID,
-                        // JENKINS-27299: pipeline can't currently be disabled, return false
-                        DisabledExclusion.ID,
-                        // Pipeline has a different property for holding triggers.
-                        TriggersExclusion.ID
-                )))));
-        // Add pipeline-specific triggers exclusion using same name and description - this is an ugly line of code but is done once ever.
-        builder.put(TriggersExclusion.ID, new JobPropertyExclusion(TriggersExclusion.ID, ProjectExclusions.ALL.get(TriggersExclusion.ID).getDescription(), "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty"));
-        ALL = builder.build();
-    }
+        ALL = index(
+                new EzTemplatesExclusion(),
+                new JobParametersExclusion(),
+                // UGLY: Add pipeline-specific triggers exclusion using same name and description
+                new JobPropertyExclusion(TriggersExclusion.ID, TriggersExclusion.DESCRIPTION, "org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty"),
+                new DescriptionExclusion(),
+                new OwnershipExclusion(),
+                new JobPropertyExclusion(MATRIX_SECURITY_ID, "Retain local matrix-build security", "hudson.security.AuthorizationMatrixProperty"),
+                new JobPropertyExclusion(GITHUB_ID, "Retain local Github details", "com.coravy.hudson.plugins.github.GithubProjectProperty"),
+                new MatrixAxisExclusion());
 
-    static {
         DEFAULT = ImmutableList.of(
                 EzTemplatesExclusion.ID,
                 JobParametersExclusion.ID,
