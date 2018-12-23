@@ -10,18 +10,15 @@ import static com.joelj.jenkins.eztemplates.utils.JobUtils.getProperty;
 
 
 /**
- * Listens to changes only on {@link Job}s with a given {@link hudson.model.JobProperty}.
+ * Listens to changes only on {@link Job}s with a given {@link JobProperty}.
  */
 public abstract class PropertyListener<J extends JobProperty> extends ItemListener {
-
-    private final boolean updateEnabled;
 
     private final Class<J> propertyType;
 
     @SuppressWarnings("unchecked")
     public PropertyListener(Class<J> propertyType) {
         this.propertyType = propertyType;        // TODO Prefer TypeToken not available in guava-11
-        updateEnabled = !VersionEvaluator.jobSaveUsesBulkchange();
     }
 
     @Override
@@ -117,9 +114,6 @@ public abstract class PropertyListener<J extends JobProperty> extends ItemListen
 
     @Override
     public final void onUpdated(Item item) {
-        if (!updateEnabled || EzTemplateChange.contains(item, propertyType)) {
-            return; // Ignore item listener updates if we trust the more general-purpose SaveableListener
-        }
         J property = getProperty(item, propertyType);
         if (property != null) {
             try {

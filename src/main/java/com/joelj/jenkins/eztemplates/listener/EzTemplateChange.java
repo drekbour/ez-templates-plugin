@@ -28,7 +28,7 @@ public class EzTemplateChange {
         this.parent = current();
         this.saveable = saveable;
         this.context = context;
-        // rememeber who allocated this object in case
+        // remember who allocated this object in case
         // someone forgot to call save() at the end.
         allocator = new Exception();
 

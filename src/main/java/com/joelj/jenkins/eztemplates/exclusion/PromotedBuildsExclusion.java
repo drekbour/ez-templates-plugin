@@ -4,6 +4,7 @@ import com.google.common.base.Throwables;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Util;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.plugins.promoted_builds.JobPropertyImpl;
 import hudson.plugins.promoted_builds.PromotionProcess;
 
@@ -35,7 +36,7 @@ public class PromotedBuildsExclusion extends JobPropertyExclusion<AbstractProjec
         } else {
             // Record the templates promotions (they will need copying)
             // PERF re-scanning to find the template!
-            AbstractProject template = TemplateUtils.getTemplateImplementationProperty(implementationProject).findTemplate();
+            Job template = TemplateUtils.getTemplateImplementationProperty(implementationProject).findTemplate();
             context.record(getProperty(template, JobPropertyImpl.class));
         }
     }

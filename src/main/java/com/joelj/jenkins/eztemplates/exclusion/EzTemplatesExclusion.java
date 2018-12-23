@@ -1,9 +1,9 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.google.common.base.Throwables;
-import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
 import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
+import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.model.AbstractItem;
 import hudson.model.Job;
 import hudson.model.JobProperty;
@@ -36,7 +36,7 @@ public class EzTemplatesExclusion extends AbstractExclusion<Job> {
         Data data = new Data();
         data.displayName = implementationProject.getDisplayNameOrNull();
         data.templateProperty = implementationProject.getProperty(TemplateProperty.class);
-        data.templateImplementationProperty = implementationProject.getProperty(TemplateImplementationProperty.class);
+        data.templateImplementationProperty = TemplateUtils.getTemplateImplementationProperty(implementationProject);
         context.record(data);
     }
 
@@ -50,6 +50,7 @@ public class EzTemplatesExclusion extends AbstractExclusion<Job> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void fixProperties(Data data, Job implementationProject) throws IOException {
         EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "displayName", data.displayName);
 

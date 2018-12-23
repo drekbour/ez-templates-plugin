@@ -1,7 +1,7 @@
 package com.joelj.jenkins.eztemplates.listener;
 
 import hudson.XmlFile;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.JobProperty;
 import hudson.model.Saveable;
 import hudson.model.listeners.SaveableListener;
@@ -10,24 +10,22 @@ import static com.joelj.jenkins.eztemplates.utils.JobUtils.getProperty;
 
 public abstract class EzSaveableListener<J extends JobProperty> extends SaveableListener {
 
-    private final boolean enabled;
     private final Class<J> propertyType;
 
     @SuppressWarnings("unchecked")
     public EzSaveableListener(Class<J> propertyType) {
         this.propertyType = propertyType;        // TODO Prefer TypeToken not available in guava-11
-        enabled = VersionEvaluator.jobSaveUsesBulkchange();
     }
 
     @Override
     public final void onChange(Saveable o, XmlFile file) {
-        if (!enabled || EzTemplateChange.contains(o, propertyType)) {
+        if (!VersionEvaluator.preferSaveableListener || EzTemplateChange.contains(o, propertyType)) {
             return;
         }
         J property = getProperty(o, propertyType);
         if (property != null) {
             try {
-                onChangedProperty((AbstractProject) o, file, property);
+                onChangedProperty((Job) o, file, property);
             } catch (Exception e) {
                 throw new RuntimeException("EZ Templates failed", e);
             }
@@ -37,7 +35,7 @@ public abstract class EzSaveableListener<J extends JobProperty> extends Saveable
     /**
      * @see SaveableListener#onChange(Saveable, XmlFile)
      */
-    public void onChangedProperty(AbstractProject job, XmlFile file, J property) throws Exception {
+    public void onChangedProperty(Job job, XmlFile file, J property) throws Exception {
     }
 
 }

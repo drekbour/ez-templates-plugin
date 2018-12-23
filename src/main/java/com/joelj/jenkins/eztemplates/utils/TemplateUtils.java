@@ -8,10 +8,12 @@ import com.joelj.jenkins.eztemplates.exclusion.ExclusionUtil;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
 import com.joelj.jenkins.eztemplates.listener.EzBulkChange;
 import com.joelj.jenkins.eztemplates.listener.EzTemplateChange;
-import com.joelj.jenkins.eztemplates.listener.PropertyListener;
+import com.joelj.jenkins.eztemplates.pipeline.PipelineTemplateImplementationProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import hudson.model.AbstractProject;
 import hudson.model.Item;
 import hudson.model.Job;
+import hudson.model.JobProperty;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -19,6 +21,10 @@ import java.util.logging.Logger;
 
 public class TemplateUtils {
     private static final Logger LOG = Logger.getLogger("ez-templates");
+
+    private static boolean isProject(Job job) {
+        return job instanceof AbstractProject;
+    }
 
     public static void handleTemplateSaved(Job templateProject, TemplateProperty property) throws IOException {
         Collection<Job> implementations = property.getImplementations();
@@ -35,7 +41,7 @@ public class TemplateUtils {
             EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
-                impl.removeProperty(TemplateImplementationProperty.class);
+                impl.removeProperty(AbstractTemplateImplementationProperty.class);
                 impl.save();
             } finally {
                 change.commit();
@@ -45,33 +51,39 @@ public class TemplateUtils {
 
     public static void handleTemplateRename(Job templateProject, TemplateProperty property, String oldFullName, String newFullName) throws IOException {
         Collection<Job> implementations = property.getImplementations(oldFullName);
-        String detail = implementations.isEmpty() ? "No implementations to sync." : " Syncing implementations.";
-        LOG.info(String.format("Template [%s] was renamed.%s", templateProject.getFullDisplayName(), detail));
+        String detail = implementations.isEmpty() ? "No implementations to sync." : "Syncing implementations.";
+        LOG.info(String.format("Template [%s] was renamed. %s", templateProject.getFullDisplayName(), detail));
+
         for (Job impl : implementations) {
             EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
-                TemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
-                if (oldFullName.equals(implProperty.getTemplateJobName())) {
-                    implProperty.setTemplateJobName(newFullName);
-                    impl.save();
-                }
+                AbstractTemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
+                implProperty.setTemplateJobName(newFullName);
+                impl.save();
             } finally {
                 change.commit();
             }
         }
     }
 
+    @SuppressWarnings("unchecked")
     public static void handleTemplateCopied(Job copy, Job original) throws IOException {
         LOG.info(String.format("Template [%s] was copied to [%s]. Forcing new project to be an implementation of the original.", original.getFullDisplayName(), copy.getFullDisplayName()));
         copy.removeProperty(TemplateProperty.class);
-        copy.removeProperty(TemplateImplementationProperty.class);
-        TemplateImplementationProperty implProperty = TemplateImplementationProperty.newImplementation(original.getFullName());
-        copy.addProperty(implProperty);
+        JobProperty<?> childProp;
+        // TODO abstract pipeline knowledge
+        if( isProject(copy) ) {
+            childProp = TemplateImplementationProperty.newImplementation(original.getFullName());
+        } else {
+            childProp = PipelineTemplateImplementationProperty.newImplementation(original.getFullName());
+        }
+        copy.removeProperty(AbstractTemplateImplementationProperty.class);
+        copy.addProperty(childProp);
     }
 
     public static void handleTemplateImplementationSaved(Job implementationProject, AbstractTemplateImplementationProperty<?> property) throws IOException {
-        EzTemplateChange change = new EzTemplateChange(implementationProject, TemplateImplementationProperty.class);
+        EzTemplateChange change = new EzTemplateChange(implementationProject, property.getClass());
         try {
             if (property.getTemplateJobName() == null) {
                 LOG.warning(String.format("Implementation [%s] has no template selected.", implementationProject.getFullDisplayName()));
@@ -137,8 +149,8 @@ public class TemplateUtils {
      * @param item A job of some kind
      * @return null if this is not a template implementation project
      */
-    public static TemplateImplementationProperty getTemplateImplementationProperty(Item item) {
-        return JobUtils.getProperty(item, TemplateImplementationProperty.class);
+    public static AbstractTemplateImplementationProperty getTemplateImplementationProperty(Item item) {
+        return JobUtils.getProperty(item, AbstractTemplateImplementationProperty.class);
     }
 
 }

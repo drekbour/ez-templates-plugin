@@ -12,7 +12,9 @@ public class VersionEvaluator {
     private static final VersionNumber JENKINS40435_LTS_MAX = new VersionNumber("2.33");
     private static final VersionNumber JENKINS40435 = new VersionNumber("2.37.rc");
 
-    public static boolean jobSaveUsesBulkchange() {
+    public static boolean preferSaveableListener = jobSaveUsesBulkchange();
+
+    static boolean jobSaveUsesBulkchange() {
         VersionNumber v = Jenkins.getVersion();
         if (v.isOlderThan(JENKINS40435_LTS)) return false;
         if (v.isNewerThan(JENKINS40435)) return true;

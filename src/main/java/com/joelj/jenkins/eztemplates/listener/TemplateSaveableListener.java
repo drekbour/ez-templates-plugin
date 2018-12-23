@@ -4,7 +4,7 @@ import com.joelj.jenkins.eztemplates.TemplateProperty;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Extension;
 import hudson.XmlFile;
-import hudson.model.AbstractProject;
+import hudson.model.Job;
 
 import java.util.logging.Logger;
 
@@ -18,8 +18,8 @@ public class TemplateSaveableListener extends EzSaveableListener<TemplatePropert
     }
 
     @Override
-    public void onChangedProperty(AbstractProject job, XmlFile file, TemplateProperty property) throws Exception {
+    public void onChangedProperty(Job job, XmlFile file, TemplateProperty property) throws Exception {
         LOG.fine(String.format("Template [%s] saved", job.getFullDisplayName()));
-        TemplateUtils.handleTemplateSaved((AbstractProject) job, property);
+        TemplateUtils.handleTemplateSaved(job, property);
     }
 }

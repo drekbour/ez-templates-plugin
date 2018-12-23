@@ -2,6 +2,7 @@ package com.joelj.jenkins.eztemplates.listener;
 
 import hudson.XmlFile;
 import hudson.model.AbstractProject;
+import hudson.model.Job;
 import hudson.model.ParametersDefinitionProperty;
 import org.junit.Before;
 import org.junit.ClassRule;
@@ -17,7 +18,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasToString;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EzSaveableListenerTest {
@@ -109,7 +112,7 @@ public class EzSaveableListenerTest {
     private EzSaveableListener<ParametersDefinitionProperty> brokenListener() {
         return spy(new EzSaveableListener<ParametersDefinitionProperty>(ParametersDefinitionProperty.class) {
             @Override
-            public void onChangedProperty(AbstractProject job, XmlFile file, ParametersDefinitionProperty property) throws Exception {
+            public void onChangedProperty(Job job, XmlFile file, ParametersDefinitionProperty property) throws Exception {
                 throw new Exception();
             }
         });
