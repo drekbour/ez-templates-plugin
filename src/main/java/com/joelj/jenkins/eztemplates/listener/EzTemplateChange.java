@@ -99,7 +99,7 @@ public class EzTemplateChange {
 
     /**
      * Magic {@link Saveable} instance that can make {@link BulkChange} veto
-     * all the save operations by making the {@link #contains(Saveable)} method return
+     * all the save operations by making the {@link #contains(Saveable, Object)} method return
      * true for everything.
      */
     public static final Saveable ALL = new Saveable() {

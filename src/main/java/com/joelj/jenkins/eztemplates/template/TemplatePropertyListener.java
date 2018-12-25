@@ -1,6 +1,6 @@
-package com.joelj.jenkins.eztemplates.listener;
+package com.joelj.jenkins.eztemplates.template;
 
-import com.joelj.jenkins.eztemplates.TemplateProperty;
+import com.joelj.jenkins.eztemplates.listener.PropertyListener;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Extension;
 import hudson.model.Job;
@@ -12,9 +12,9 @@ import java.io.IOException;
  * React to changes being made on template projects
  */
 @Extension
-public class TemplateProjectListener extends PropertyListener<TemplateProperty> {
+public class TemplatePropertyListener extends PropertyListener<TemplateProperty> {
 
-    public TemplateProjectListener() {
+    public TemplatePropertyListener() {
         super(TemplateProperty.class);
     }
 

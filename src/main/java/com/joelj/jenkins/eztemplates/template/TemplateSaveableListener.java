@@ -1,6 +1,6 @@
-package com.joelj.jenkins.eztemplates.listener;
+package com.joelj.jenkins.eztemplates.template;
 
-import com.joelj.jenkins.eztemplates.TemplateProperty;
+import com.joelj.jenkins.eztemplates.listener.EzSaveableListener;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Extension;
 import hudson.XmlFile;

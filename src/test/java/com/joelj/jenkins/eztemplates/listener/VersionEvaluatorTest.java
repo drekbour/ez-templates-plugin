@@ -32,7 +32,7 @@ public class VersionEvaluatorTest {
         // Given:
         jenkinsVersion.set(version);
         // When:
-        boolean usesBulkSave = VersionEvaluator.jobSaveUsesBulkchange();
+        boolean usesBulkSave = VersionEvaluator.preferSaveableListener();
         // Then:
         assertThat(usesBulkSave, is(expected));
     }

@@ -1,15 +1,16 @@
 package com.joelj.jenkins.eztemplates;
 
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.equalTo;
-
-import java.util.Collection;
-
+import com.joelj.jenkins.eztemplates.project.ProjectChildProperty;
+import com.joelj.jenkins.eztemplates.template.TemplateProperty;
+import hudson.model.Job;
 import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
 
-import hudson.model.Job;
+import java.util.Collection;
+
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 
 abstract class EzMatchers {
 
@@ -21,7 +22,7 @@ abstract class EzMatchers {
 
         @Override
         protected String featureValueOf(Job<?, ?> actual) {
-            TemplateImplementationProperty prop = actual.getProperty(TemplateImplementationProperty.class);
+            ProjectChildProperty prop = actual.getProperty(ProjectChildProperty.class);
             return prop == null ? null : prop.findTemplate().getFullName();
         }
     }

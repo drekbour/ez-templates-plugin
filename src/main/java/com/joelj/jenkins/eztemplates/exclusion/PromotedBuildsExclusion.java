@@ -29,14 +29,14 @@ public class PromotedBuildsExclusion extends JobPropertyExclusion<AbstractProjec
     }
 
     @Override
-    public void preClone(EzContext context, AbstractProject implementationProject) {
+    public void preClone(EzContext context, AbstractProject child) {
         if (context.isSelected()) {
             // Record the childs promotions (they will need re-registering)
-            super.preClone(context, implementationProject);
+            super.preClone(context, child);
         } else {
             // Record the templates promotions (they will need copying)
             // PERF re-scanning to find the template!
-            Job template = TemplateUtils.getTemplateImplementationProperty(implementationProject).findTemplate();
+            Job template = TemplateUtils.getChildProperty(child).findTemplate();
             context.record(getProperty(template, JobPropertyImpl.class));
         }
     }
@@ -45,18 +45,18 @@ public class PromotedBuildsExclusion extends JobPropertyExclusion<AbstractProjec
      * Adds all the promotions from the template project into the implementation one. All existing promotions from the
      * implementation project are lost.
      *
-     * @param implementationProject
+     * @param child
      */
     @Override
-    public void postClone(EzContext context, AbstractProject implementationProject) {
+    public void postClone(EzContext context, AbstractProject child) {
         if (context.isSelected()) {
-            super.postClone(context, implementationProject);
+            super.postClone(context, child);
         } else {
             JobPropertyImpl templatePromotions = context.remember();
             if (templatePromotions != null) {
                 try {
-                    LOG.fine(String.format("Copying [%s] to %s", templatePromotions.getFullDisplayName(), implementationProject.getFullDisplayName()));
-                    replacePromotions(getProperty(implementationProject, JobPropertyImpl.class), templatePromotions);
+                    LOG.fine(String.format("Copying [%s] to %s", templatePromotions.getFullDisplayName(), child.getFullDisplayName()));
+                    replacePromotions(getProperty(child, JobPropertyImpl.class), templatePromotions);
                 } catch (Exception e) {
                     throw Throwables.propagate(e);
                 }

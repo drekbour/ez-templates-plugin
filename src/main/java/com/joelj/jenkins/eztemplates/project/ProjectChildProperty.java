@@ -1,8 +1,17 @@
-package com.joelj.jenkins.eztemplates;
+package com.joelj.jenkins.eztemplates.project;
 
 import com.google.common.collect.ImmutableList;
-import com.joelj.jenkins.eztemplates.exclusion.*;
-import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
+import com.joelj.jenkins.eztemplates.ChildProperty;
+import com.joelj.jenkins.eztemplates.exclusion.AssignedLabelExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.DescriptionExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.DisabledExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
+import com.joelj.jenkins.eztemplates.exclusion.Exclusions;
+import com.joelj.jenkins.eztemplates.exclusion.EzTemplatesExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.JobParametersExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.MatrixAxisExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.ScmExclusion;
+import com.joelj.jenkins.eztemplates.exclusion.TriggersExclusion;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -10,8 +19,10 @@ import org.kohsuke.stapler.DataBoundConstructor;
 import java.util.Collection;
 import java.util.List;
 
-// TODO move this class to .project and use xstream alias for compatibility
-public class TemplateImplementationProperty extends AbstractTemplateImplementationProperty<AbstractProject<?, ?>> {
+/**
+ * Owning classic {@link AbstractProject} is templated.
+ */
+public class ProjectChildProperty extends ChildProperty<AbstractProject<?, ?>> {
 
     private static final Exclusions EXCLUSION_DEFINITIONS = new ProjectExclusions();
 
@@ -24,8 +35,8 @@ public class TemplateImplementationProperty extends AbstractTemplateImplementati
     private final boolean syncOwnership;
     private final boolean syncAssignedLabel;
 
-    public static TemplateImplementationProperty newImplementation(String templateJobName) {
-        return new TemplateImplementationProperty(
+    public static ProjectChildProperty newImplementation(String templateJobName) {
+        return new ProjectChildProperty(
                 templateJobName,
                 EXCLUSION_DEFINITIONS.getDefaults(),
                 true, true, false, false, false, false, false, false);
@@ -33,7 +44,7 @@ public class TemplateImplementationProperty extends AbstractTemplateImplementati
 
     @Deprecated
     @DataBoundConstructor
-    public TemplateImplementationProperty(String templateJobName, List<String> exclusions, boolean syncDescription, boolean syncDisabled, boolean syncMatrixAxis, boolean syncBuildTriggers, boolean syncSecurity, boolean syncScm, boolean syncOwnership, boolean syncAssignedLabel) {
+    public ProjectChildProperty(String templateJobName, List<String> exclusions, boolean syncDescription, boolean syncDisabled, boolean syncMatrixAxis, boolean syncBuildTriggers, boolean syncSecurity, boolean syncScm, boolean syncOwnership, boolean syncAssignedLabel) {
         super(templateJobName, exclusions);
         // Support for rollback to <1.2.0
         this.syncDescription = !exclusions.contains(DescriptionExclusion.ID);
@@ -112,9 +123,9 @@ public class TemplateImplementationProperty extends AbstractTemplateImplementati
 
     @SuppressWarnings("UnusedDeclaration")
     @Extension
-    public static class TemplateImplementationPropertyDescriptor extends AbstractTemplateImplementationPropertyDescriptor {
+    public static class ProjectChildPropertyDescriptor extends ChildPropertyDescriptor {
 
-        public TemplateImplementationPropertyDescriptor() {
+        public ProjectChildPropertyDescriptor() {
             super(AbstractProject.class);
         }
 

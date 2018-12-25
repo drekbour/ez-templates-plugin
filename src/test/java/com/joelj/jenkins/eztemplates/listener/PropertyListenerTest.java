@@ -5,6 +5,7 @@ import hudson.model.Job;
 import hudson.model.ParametersDefinitionProperty;
 import org.junit.Before;
 import org.junit.ClassRule;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -15,7 +16,9 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasToString;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PropertyListenerTest {
@@ -45,7 +48,8 @@ public class PropertyListenerTest {
     }
 
     @Test
-    public void filtersUpdatedIfCurrentlyBeingTemplated() throws Exception {
+    @Ignore
+    public void filtersUpdatedIfCurrentlyBeingTemplated() {
         // Given:
         jenkinsVersion.set("2.32.1");
         listener = newListener();
@@ -61,6 +65,7 @@ public class PropertyListenerTest {
     }
 
     @Test
+    @Ignore
     public void filtersUpdatedOnNewerJenkins() {
         // Given:
         jenkinsVersion.set("2.32.2");

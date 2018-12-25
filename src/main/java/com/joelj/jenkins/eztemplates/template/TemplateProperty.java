@@ -1,8 +1,9 @@
-package com.joelj.jenkins.eztemplates;
+package com.joelj.jenkins.eztemplates.template;
 
 import com.google.common.collect.Collections2;
+import com.joelj.jenkins.eztemplates.ChildProperty;
+import com.joelj.jenkins.eztemplates.Messages;
 import com.joelj.jenkins.eztemplates.utils.JobUtils;
-import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.Extension;
 import hudson.model.Job;
 import jenkins.model.OptionalJobProperty;
@@ -10,14 +11,16 @@ import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.util.Collection;
 
+import static com.joelj.jenkins.eztemplates.utils.TemplateUtils.getChildProperty;
+
+/**
+ * Owning {@link Job} can be used as a template.
+ */
 public class TemplateProperty extends OptionalJobProperty<Job<?, ?>> {
 
     public Collection<Job> getImplementations(final String templateFullName) {
-        Collection<Job> projects = JobUtils.findJobsWithProperty(AbstractTemplateImplementationProperty.class);
-        return Collections2.filter(projects, job -> {
-            AbstractTemplateImplementationProperty child = TemplateUtils.getTemplateImplementationProperty(job);
-            return templateFullName.equals(child.getTemplateJobName());
-        });
+        Collection<Job> projects = JobUtils.findJobsWithProperty(ChildProperty.class);
+        return Collections2.filter(projects, job -> templateFullName.equals(getChildProperty(job).getTemplateJobName()));
     }
 
     @DataBoundConstructor

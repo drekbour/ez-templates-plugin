@@ -1,14 +1,14 @@
 package com.joelj.jenkins.eztemplates.utils;
 
-import com.joelj.jenkins.eztemplates.AbstractTemplateImplementationProperty;
-import com.joelj.jenkins.eztemplates.TemplateImplementationProperty;
-import com.joelj.jenkins.eztemplates.TemplateProperty;
+import com.joelj.jenkins.eztemplates.ChildProperty;
 import com.joelj.jenkins.eztemplates.exclusion.Exclusion;
 import com.joelj.jenkins.eztemplates.exclusion.ExclusionUtil;
 import com.joelj.jenkins.eztemplates.exclusion.EzContext;
 import com.joelj.jenkins.eztemplates.listener.EzBulkChange;
 import com.joelj.jenkins.eztemplates.listener.EzTemplateChange;
-import com.joelj.jenkins.eztemplates.pipeline.PipelineTemplateImplementationProperty;
+import com.joelj.jenkins.eztemplates.pipeline.PipelineChildProperty;
+import com.joelj.jenkins.eztemplates.project.ProjectChildProperty;
+import com.joelj.jenkins.eztemplates.template.TemplateProperty;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.model.AbstractProject;
 import hudson.model.Item;
@@ -31,7 +31,7 @@ public class TemplateUtils {
         String detail = implementations.isEmpty() ? "No implementations to sync." : " Syncing implementations.";
         LOG.info(String.format("Template [%s] was saved.%s", templateProject.getFullDisplayName(), detail));
         for (Job impl : implementations) {
-            handleTemplateImplementationSaved(impl, getTemplateImplementationProperty(impl)); // ? continue on exception
+            handleTemplateImplementationSaved(impl, getChildProperty(impl)); // ? continue on exception
         }
     }
 
@@ -41,7 +41,7 @@ public class TemplateUtils {
             EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Removing template from [%s].", impl.getFullDisplayName()));
-                impl.removeProperty(AbstractTemplateImplementationProperty.class);
+                impl.removeProperty(ChildProperty.class);
                 impl.save();
             } finally {
                 change.commit();
@@ -58,7 +58,7 @@ public class TemplateUtils {
             EzTemplateChange change = new EzTemplateChange(impl, TemplateProperty.class);
             try {
                 LOG.info(String.format("Updating template in [%s].", impl.getFullDisplayName()));
-                AbstractTemplateImplementationProperty implProperty = getTemplateImplementationProperty(impl);
+                ChildProperty implProperty = getChildProperty(impl);
                 implProperty.setTemplateJobName(newFullName);
                 impl.save();
             } finally {
@@ -74,15 +74,15 @@ public class TemplateUtils {
         JobProperty<?> childProp;
         // TODO abstract pipeline knowledge
         if( isProject(copy) ) {
-            childProp = TemplateImplementationProperty.newImplementation(original.getFullName());
+            childProp = ProjectChildProperty.newImplementation(original.getFullName());
         } else {
-            childProp = PipelineTemplateImplementationProperty.newImplementation(original.getFullName());
+            childProp = PipelineChildProperty.newImplementation(original.getFullName());
         }
-        copy.removeProperty(AbstractTemplateImplementationProperty.class);
+        copy.removeProperty(ChildProperty.class);
         copy.addProperty(childProp);
     }
 
-    public static void handleTemplateImplementationSaved(Job implementationProject, AbstractTemplateImplementationProperty<?> property) throws IOException {
+    public static void handleTemplateImplementationSaved(Job implementationProject, ChildProperty<?> property) throws IOException {
         EzTemplateChange change = new EzTemplateChange(implementationProject, property.getClass());
         try {
             if (property.getTemplateJobName() == null) {
@@ -149,8 +149,8 @@ public class TemplateUtils {
      * @param item A job of some kind
      * @return null if this is not a template implementation project
      */
-    public static AbstractTemplateImplementationProperty getTemplateImplementationProperty(Item item) {
-        return JobUtils.getProperty(item, AbstractTemplateImplementationProperty.class);
+    public static ChildProperty getChildProperty(Item item) {
+        return JobUtils.getProperty(item, ChildProperty.class);
     }
 
 }

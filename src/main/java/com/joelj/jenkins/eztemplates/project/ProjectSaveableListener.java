@@ -1,4 +1,4 @@
-package com.joelj.jenkins.eztemplates.pipeline;
+package com.joelj.jenkins.eztemplates.project;
 
 import com.joelj.jenkins.eztemplates.listener.EzSaveableListener;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
@@ -9,16 +9,16 @@ import hudson.model.Job;
 import java.util.logging.Logger;
 
 @Extension
-public class PipelineTemplateImplementationSaveableListener extends EzSaveableListener<PipelineTemplateImplementationProperty> {
+public class ProjectSaveableListener extends EzSaveableListener<ProjectChildProperty> {
 
     private static final Logger LOG = Logger.getLogger("ez-templates");
 
-    public PipelineTemplateImplementationSaveableListener() {
-        super(PipelineTemplateImplementationProperty.class);
+    public ProjectSaveableListener() {
+        super(ProjectChildProperty.class);
     }
 
     @Override
-    public void onChangedProperty(Job job, XmlFile file, PipelineTemplateImplementationProperty property) throws Exception {
+    public void onChangedProperty(Job job, XmlFile file, ProjectChildProperty property) throws Exception {
         LOG.fine(String.format("Implementation [%s] saved", job.getFullDisplayName()));
         TemplateUtils.handleTemplateImplementationSaved(job, property);
     }

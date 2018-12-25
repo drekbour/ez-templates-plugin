@@ -1,10 +1,15 @@
 package com.joelj.jenkins.eztemplates;
 
-import com.joelj.jenkins.eztemplates.TemplateImplementationProperty.TemplateImplementationPropertyDescriptor;
-import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
 import com.joelj.jenkins.eztemplates.listener.VersionEvaluator;
+import com.joelj.jenkins.eztemplates.project.ProjectChildProperty;
+import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
+import com.joelj.jenkins.eztemplates.template.TemplateProperty;
 import hudson.BulkChange;
-import hudson.model.*;
+import hudson.model.AbstractProject;
+import hudson.model.FreeStyleProject;
+import hudson.model.Item;
+import hudson.model.Items;
+import hudson.model.TopLevelItem;
 import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.triggers.TimerTrigger;
@@ -16,10 +21,16 @@ import org.jvnet.hudson.test.JenkinsRule;
 
 import java.util.List;
 
-import static com.joelj.jenkins.eztemplates.EzMatchers.*;
+import static com.joelj.jenkins.eztemplates.EzMatchers.hasImplementations;
+import static com.joelj.jenkins.eztemplates.EzMatchers.hasNoImplementations;
+import static com.joelj.jenkins.eztemplates.EzMatchers.hasNoTemplate;
+import static com.joelj.jenkins.eztemplates.EzMatchers.hasTemplate;
 import static com.joelj.jenkins.eztemplates.FieldMatcher.hasField;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assume.assumeThat;
 
 
@@ -58,7 +69,7 @@ public class BehaviourTest {
 
     private static FreeStyleProject assignTemplate(String template, FreeStyleProject impl) throws java.io.IOException {
         BulkChange change = new BulkChange(impl);
-        impl.addProperty(TemplateImplementationProperty.newImplementation(template));
+        impl.addProperty(ProjectChildProperty.newImplementation(template));
         change.abort(); // Leaves XML unchanged, doesn't save()
         return impl;
     }
@@ -72,7 +83,7 @@ public class BehaviourTest {
     }
 
     private static void save(Item project) {
-        if (VersionEvaluator.jobSaveUsesBulkchange()) {
+        if (VersionEvaluator.preferSaveableListener()) {
             SaveableListener.fireOnChange(project, Items.getConfigFile(project));
         } else {
             ItemListener.fireOnUpdated(project);
@@ -89,7 +100,7 @@ public class BehaviourTest {
         FreeStyleProject template2 = template("beta-template");
         template2.setDisplayName("Beta Template");
         // When:
-        ListBoxModel knownTemplates = new TemplateImplementationProperty.TemplateImplementationPropertyDescriptor().doFillTemplateJobNameItems();
+        ListBoxModel knownTemplates = new ProjectChildProperty.ProjectChildPropertyDescriptor().doFillTemplateJobNameItems();
         // Then:
         assertThat(knownTemplates, contains(
                 both(hasField("name", "No template selected")).and(hasField("value", null)),
@@ -103,7 +114,7 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject impl = impl("my-impl", (String) null);
         // When:
-        List<String> exclusions = impl.getProperty(TemplateImplementationProperty.class).getExclusions();
+        List<String> exclusions = impl.getProperty(ProjectChildProperty.class).getExclusions();
         // Then:
         assertThat(exclusions, is(equalTo(new ProjectExclusions().getDefaults())));
     }
@@ -240,7 +251,7 @@ public class BehaviourTest {
 
     @Test
     public void saving_propagates_across_nested_templates() throws Exception {
-        assumeThat("Only works on >=2.32.2", VersionEvaluator.jobSaveUsesBulkchange(), is(true));
+        assumeThat("Only works on >=2.32.2", VersionEvaluator.preferSaveableListener(), is(true));
         // Given:
         FreeStyleProject grandparent = template("food");
         FreeStyleProject parent = template("fruit", "food");

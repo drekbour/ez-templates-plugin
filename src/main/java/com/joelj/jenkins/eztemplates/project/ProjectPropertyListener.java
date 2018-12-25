@@ -1,4 +1,4 @@
-package com.joelj.jenkins.eztemplates.pipeline;
+package com.joelj.jenkins.eztemplates.project;
 
 import com.joelj.jenkins.eztemplates.listener.EzTemplateChange;
 import com.joelj.jenkins.eztemplates.listener.PropertyListener;
@@ -15,15 +15,15 @@ import static com.joelj.jenkins.eztemplates.listener.VersionEvaluator.preferSave
  */
 @Extension
 @Deprecated
-public class PipelineTemplateImplementationProjectListener extends PropertyListener<PipelineTemplateImplementationProperty> {
+public class ProjectPropertyListener extends PropertyListener<ProjectChildProperty> {
 
-    public PipelineTemplateImplementationProjectListener() {
-        super(PipelineTemplateImplementationProperty.class);
+    public ProjectPropertyListener() {
+        super(ProjectChildProperty.class);
     }
 
     @Override
-    public void onUpdatedProperty(Job item, PipelineTemplateImplementationProperty property) throws IOException {
-        if (preferSaveableListener || EzTemplateChange.contains(item, property.getClass())) {
+    public void onUpdatedProperty(Job item, ProjectChildProperty property) throws IOException {
+        if (preferSaveableListener() || EzTemplateChange.contains(item, property.getClass())) {
             return; // Ignore item listener updates if we trust the more general-purpose SaveableListener
         }
         TemplateUtils.handleTemplateImplementationSaved(item, property);

@@ -1,7 +1,7 @@
 package com.joelj.jenkins.eztemplates.exclusion;
 
 import com.google.common.base.Throwables;
-import com.joelj.jenkins.eztemplates.TemplateProperty;
+import com.joelj.jenkins.eztemplates.template.TemplateProperty;
 import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import com.joelj.jenkins.eztemplates.utils.TemplateUtils;
 import hudson.model.AbstractItem;
@@ -31,37 +31,37 @@ public class EzTemplatesExclusion extends AbstractExclusion<Job> {
     }
 
     @Override
-    public void preClone(EzContext context, Job implementationProject) {
+    public void preClone(EzContext context, Job child) {
         if (!context.isSelected()) return;
         Data data = new Data();
-        data.displayName = implementationProject.getDisplayNameOrNull();
-        data.templateProperty = implementationProject.getProperty(TemplateProperty.class);
-        data.templateImplementationProperty = TemplateUtils.getTemplateImplementationProperty(implementationProject);
+        data.displayName = child.getDisplayNameOrNull();
+        data.templateProperty = child.getProperty(TemplateProperty.class);
+        data.templateImplementationProperty = TemplateUtils.getChildProperty(child);
         context.record(data);
     }
 
     @Override
-    public void postClone(EzContext context, Job implementationProject) {
+    public void postClone(EzContext context, Job child) {
         if (!context.isSelected()) return;
         try {
-            fixProperties((Data) context.remember(), implementationProject);
+            fixProperties((Data) context.remember(), child);
         } catch (IOException e) {
             Throwables.propagate(e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private void fixProperties(Data data, Job implementationProject) throws IOException {
-        EzReflectionUtils.setFieldValue(AbstractItem.class, implementationProject, "displayName", data.displayName);
+    private void fixProperties(Data preClone, Job child) throws IOException {
+        EzReflectionUtils.setFieldValue(AbstractItem.class, child, "displayName", preClone.displayName);
 
-        implementationProject.removeProperty(data.templateImplementationProperty.getClass()); // If parent template is also an imple of a grand-parent
-        implementationProject.addProperty(data.templateImplementationProperty);
+        child.removeProperty(preClone.templateImplementationProperty.getClass()); // If parent template is also an imple of a grand-parent
+        child.addProperty(preClone.templateImplementationProperty);
 
         // Remove the cloned TemplateProperty belonging to the template
-        implementationProject.removeProperty(TemplateProperty.class);
-        if (data.templateProperty != null) {
+        child.removeProperty(TemplateProperty.class);
+        if (preClone.templateProperty != null) {
             // !null means the Impl is _also_ a template for grand-children.
-            implementationProject.addProperty(data.templateProperty);
+            child.addProperty(preClone.templateProperty);
         }
     }
 
