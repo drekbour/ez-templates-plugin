@@ -118,18 +118,4 @@ public class JobUtils {
         return null;
     }
 
-    private static final String ABSTRACT_PROJECT_CLASS = "hudson.model.AbstractProject";
-    private static final String WORKFLOW_JOB_CLASS = "org.jenkinsci.plugins.workflow.job.WorkflowJob";
-
-    /**
-     * Verifies if this template plugin applies to the Jenkins job type.
-     *
-     * @param jobType Jenkins job type.
-     * @return {@code true} if it is a supported type.
-     */
-    public static boolean canBeTemplated(Class<? extends Job> jobType) {
-        return EzReflectionUtils.isAssignable(ABSTRACT_PROJECT_CLASS, jobType)
-                || EzReflectionUtils.isAssignable(WORKFLOW_JOB_CLASS, jobType);
-    }
-
 }

@@ -8,7 +8,7 @@ import hudson.model.Job;
 
 import java.util.logging.Logger;
 
-@Extension
+@Extension(optional = true)
 public class PipelineSaveableListener extends EzSaveableListener<PipelineChildProperty> {
 
     private static final Logger LOG = Logger.getLogger("ez-templates");

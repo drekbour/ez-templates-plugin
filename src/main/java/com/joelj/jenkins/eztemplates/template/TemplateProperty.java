@@ -3,6 +3,7 @@ package com.joelj.jenkins.eztemplates.template;
 import com.google.common.collect.Collections2;
 import com.joelj.jenkins.eztemplates.ChildProperty;
 import com.joelj.jenkins.eztemplates.Messages;
+import com.joelj.jenkins.eztemplates.utils.EzReflectionUtils;
 import com.joelj.jenkins.eztemplates.utils.JobUtils;
 import com.thoughtworks.xstream.annotations.XStreamAlias;
 import hudson.Extension;
@@ -40,9 +41,12 @@ public class TemplateProperty extends OptionalJobProperty<Job<?, ?>> {
             return Messages.TemplateProperty_displayName();
         }
 
+
         @Override
         public boolean isApplicable(Class<? extends Job> jobType) {
-            return JobUtils.canBeTemplated(jobType);
+            // Would be nice if this had a relationship with isApplicable of its counterparts.
+            return EzReflectionUtils.isAssignable("hudson.model.AbstractProject", jobType)
+                    || EzReflectionUtils.isAssignable("org.jenkinsci.plugins.workflow.job.WorkflowJob", jobType);
         }
     }
 }

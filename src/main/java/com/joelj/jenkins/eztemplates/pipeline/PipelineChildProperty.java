@@ -36,7 +36,7 @@ public class PipelineChildProperty extends ChildProperty<WorkflowJob> {
     }
 
     @SuppressWarnings("UnusedDeclaration")
-    @Extension
+    @Extension(optional=true)
     public static class PipelineChildPropertyDescriptor extends ChildPropertyDescriptor {
         public PipelineChildPropertyDescriptor() {
             super(WorkflowJob.class);
