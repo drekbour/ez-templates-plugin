@@ -4,6 +4,7 @@ import com.google.common.collect.Collections2;
 import com.joelj.jenkins.eztemplates.ChildProperty;
 import com.joelj.jenkins.eztemplates.Messages;
 import com.joelj.jenkins.eztemplates.utils.JobUtils;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import hudson.Extension;
 import hudson.model.Job;
 import jenkins.model.OptionalJobProperty;
@@ -16,6 +17,7 @@ import static com.joelj.jenkins.eztemplates.utils.TemplateUtils.getChildProperty
 /**
  * Owning {@link Job} can be used as a template.
  */
+@XStreamAlias("ezTemplate")
 public class TemplateProperty extends OptionalJobProperty<Job<?, ?>> {
 
     public Collection<Job> getImplementations(final String templateFullName) {

@@ -12,6 +12,7 @@ import com.joelj.jenkins.eztemplates.exclusion.JobParametersExclusion;
 import com.joelj.jenkins.eztemplates.exclusion.MatrixAxisExclusion;
 import com.joelj.jenkins.eztemplates.exclusion.ScmExclusion;
 import com.joelj.jenkins.eztemplates.exclusion.TriggersExclusion;
+import com.thoughtworks.xstream.annotations.XStreamAlias;
 import hudson.Extension;
 import hudson.model.AbstractProject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -22,6 +23,7 @@ import java.util.List;
 /**
  * Owning classic {@link AbstractProject} is templated.
  */
+@XStreamAlias("ezTemplateProjectChild")
 public class ProjectChildProperty extends ChildProperty<AbstractProject<?, ?>> {
 
     private static final Exclusions EXCLUSION_DEFINITIONS = new ProjectExclusions();
