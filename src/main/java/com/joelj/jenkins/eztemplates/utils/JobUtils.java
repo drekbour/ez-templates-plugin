@@ -1,6 +1,5 @@
 package com.joelj.jenkins.eztemplates.utils;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import hudson.XmlFile;
@@ -12,7 +11,6 @@ import hudson.util.AtomicFileWriter;
 import jenkins.model.Jenkins;
 import jenkins.security.NotReallyRoleSensitiveCallable;
 
-import javax.annotation.Nonnull;
 import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
@@ -29,14 +27,9 @@ import java.util.List;
 public class JobUtils {
 
     @SuppressFBWarnings
-    public static Collection<Job> findJobsWithProperty(final Class<? extends JobProperty> property) {
+    public static Collection<Job> findJobsWithProperty(Class<? extends JobProperty> property) {
         List<Job> projects = Jenkins.getInstance().getAllItems(Job.class);
-        return Collections2.filter(projects, new Predicate<Job>() {
-            @Override
-            public boolean apply(@Nonnull Job job) {
-                return job.getProperty(property) != null;
-            }
-        });
+        return Collections2.filter(projects, job -> job.getProperty(property) != null);
     }
 
     /**
@@ -48,13 +41,7 @@ public class JobUtils {
     @SuppressWarnings("unchecked")
     @SuppressFBWarnings
     public static <J extends Job> J findJob(String fullName) {
-        List<Job> projects = Jenkins.getInstance().getAllItems(Job.class);
-        for (Job project : projects) {
-            if (fullName.equals(project.getFullName())) {
-                return (J)project;
-            }
-        }
-        return null;
+        return (J)Jenkins.getInstance().getItemByFullName(fullName, Job.class);
     }
 
     public static void updateProjectWithXmlSource(AbstractItem project, Path source) throws IOException {
@@ -70,7 +57,6 @@ public class JobUtils {
      *
      * @param project    job to persist
      * @param source configuration to be persisted
-     * @return project as returned by {@link #findJob(String)}
      * @throws IOException if unable to persist
      */
     @SuppressWarnings("unchecked")

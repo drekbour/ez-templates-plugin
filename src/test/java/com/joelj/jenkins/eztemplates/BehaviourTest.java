@@ -16,6 +16,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.MockFolder;
 
 import java.util.List;
 
@@ -224,10 +225,11 @@ public class BehaviourTest {
         // Given:
         FreeStyleProject template = template("alpha-template");
         FreeStyleProject impl = impl("alpha-1", template);
+        MockFolder subfolder = jenkins.createFolder("folder");
         // When:
-        template.renameTo("subfolder/alpha-template");
+        Items.move(template, subfolder);
         // Then:
-        assertThat(impl, hasTemplate("subfolder/alpha-template"));
+        assertThat(impl, hasTemplate("folder/alpha-template"));
     }
 
     @Test
