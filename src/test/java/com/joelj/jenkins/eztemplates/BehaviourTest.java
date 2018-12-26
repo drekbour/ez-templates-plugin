@@ -1,6 +1,5 @@
 package com.joelj.jenkins.eztemplates;
 
-import com.joelj.jenkins.eztemplates.listener.VersionEvaluator;
 import com.joelj.jenkins.eztemplates.project.ProjectChildProperty;
 import com.joelj.jenkins.eztemplates.project.ProjectExclusions;
 import com.joelj.jenkins.eztemplates.template.TemplateProperty;
@@ -10,7 +9,6 @@ import hudson.model.FreeStyleProject;
 import hudson.model.Item;
 import hudson.model.Items;
 import hudson.model.TopLevelItem;
-import hudson.model.listeners.ItemListener;
 import hudson.model.listeners.SaveableListener;
 import hudson.triggers.TimerTrigger;
 import hudson.util.ListBoxModel;
@@ -31,7 +29,6 @@ import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assume.assumeThat;
 
 
 /**
@@ -83,11 +80,7 @@ public class BehaviourTest {
     }
 
     private static void save(Item project) {
-        if (VersionEvaluator.preferSaveableListener()) {
-            SaveableListener.fireOnChange(project, Items.getConfigFile(project));
-        } else {
-            ItemListener.fireOnUpdated(project);
-        }
+        SaveableListener.fireOnChange(project, Items.getConfigFile(project));
     }
 
     // Identity
@@ -251,7 +244,6 @@ public class BehaviourTest {
 
     @Test
     public void saving_propagates_across_nested_templates() throws Exception {
-        assumeThat("Only works on >=2.32.2", VersionEvaluator.preferSaveableListener(), is(true));
         // Given:
         FreeStyleProject grandparent = template("food");
         FreeStyleProject parent = template("fruit", "food");

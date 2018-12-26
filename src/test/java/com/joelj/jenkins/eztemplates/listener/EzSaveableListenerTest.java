@@ -5,7 +5,6 @@ import hudson.model.AbstractProject;
 import hudson.model.Job;
 import hudson.model.ParametersDefinitionProperty;
 import org.junit.Before;
-import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -25,9 +24,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 @RunWith(MockitoJUnitRunner.class)
 public class EzSaveableListenerTest {
 
-    @ClassRule
-    public static JenkinsVersionRule jenkinsVersion = new JenkinsVersionRule();
-
     @Mock
     private AbstractProject job;
     private XmlFile xmlFile = new XmlFile(new File("filename"));
@@ -42,7 +38,6 @@ public class EzSaveableListenerTest {
     @Test
     public void notifiesChange() throws Exception {
         // Given:
-        jenkinsVersion.set("2.32.2");
         listener = newListener();
         // When:
         listener.onChange(job, xmlFile);
@@ -53,7 +48,6 @@ public class EzSaveableListenerTest {
     @Test
     public void filtersChangeIfCurrentlyBeingTemplated() {
         // Given:
-        jenkinsVersion.set("2.32.2");
         listener = newListener();
         // When:
         EzTemplateChange change = new EzTemplateChange(job, ParametersDefinitionProperty.class);
@@ -67,20 +61,8 @@ public class EzSaveableListenerTest {
     }
 
     @Test
-    public void filtersChangeOnOlderJenkins() {
-        // Given:
-        jenkinsVersion.set("2.32.1");
-        listener = newListener();
-        // When:
-        listener.onChange(job, xmlFile);
-        // Then:
-        verifyZeroInteractions(listener);
-    }
-
-    @Test
     public void filtersChangeIfPropertyIsMissing() {
         // Given:
-        jenkinsVersion.set("2.32.2");
         listener = newListener();
         given(job.getProperty(ParametersDefinitionProperty.class)).willReturn(null);
         // When:
@@ -93,7 +75,6 @@ public class EzSaveableListenerTest {
     public void rethrowsExceptions() {
         // Given:
         try {
-            jenkinsVersion.set("2.32.2");
             listener = brokenListener();
             // When:
             listener.onChange(job, xmlFile);
