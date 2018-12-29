@@ -1,4 +1,4 @@
-[![Build Status](https://jenkins.ci.cloudbees.com/buildStatus/icon?job=plugins/ez-templates-plugin)](https://jenkins.ci.cloudbees.com/job/plugins/ez-templates-plugin)
+![Build Status](https://ci.jenkins.io/buildStatus/icon?job=Plugins/ez-templates-plugin/master)
 
 Allows you to use any job as a template for other jobs.
 
