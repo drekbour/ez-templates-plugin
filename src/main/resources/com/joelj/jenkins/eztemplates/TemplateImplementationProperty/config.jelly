@@ -5,16 +5,16 @@
 
     <f:entry field="templateJobName" title="${%Name of template}">
       <f:select/>
-      <f:description>
-        <j:if test="${instance.templateJobName != null}">
-          <j:set var="template" value="${instance.findTemplate()}"/>
-          <j:if test="${template != null}">
-            ${%Currently based on}:
-            <a href="${rootURL}/${template.url}">${template.fullDisplayName}</a>
-          </j:if>
-        </j:if>
-      </f:description>
     </f:entry>
+    <f:description>
+      <j:if test="${instance.templateJobName != null}">
+        <j:set var="template" value="${instance.findTemplate()}"/>
+        <j:if test="${template != null}">
+          ${%Currently based on}:
+          <a href="${rootURL}/${template.url}">${template.fullDisplayName}</a>
+        </j:if>
+      </j:if>
+    </f:description>
 
     <f:advanced>
       <f:entry>
