@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'idea'
-    id 'org.jenkins-ci.jpi' version '0.38.0'
+    id 'org.jenkins-ci.jpi' version '0.39.0'
     id 'com.palantir.git-version' version '0.12.0-rc2'
 }
 
@@ -14,8 +14,14 @@ repositories {
     jcenter()
 }
 
+java {
+    registerFeature('optionalJenkinsPlugins') {
+        usingSourceSet(sourceSets.main)
+    }
+}
+
 dependencies {
-    optionalJenkinsPlugins 'org.jenkins-ci.plugins:promoted-builds:2.21@jar',
+    optionalJenkinsPluginsApi 'org.jenkins-ci.plugins:promoted-builds:2.21@jar',
             'org.jenkins-ci.plugins.workflow:workflow-job:2.4@jar'
 
     testCompile 'junit:junit:4.12',
