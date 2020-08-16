@@ -2,7 +2,7 @@ plugins {
     id 'java'
     id 'jacoco'
     id 'idea'
-    id 'org.jenkins-ci.jpi' version '0.28.1'
+    id 'org.jenkins-ci.jpi' version '0.38.0'
     id 'com.palantir.git-version' version '0.12.0-rc2'
 }
 
