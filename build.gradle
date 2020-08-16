@@ -30,7 +30,7 @@ dependencies {
             'pl.pragmatists:JUnitParams:1.0.5'
 }
 
-sourceCompatibility = 1.7
+sourceCompatibility = 1.8
 
 // Disable Java 8 doclint
 allprojects {
